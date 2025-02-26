@@ -37,10 +37,18 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.CUSTOMER;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+
 }
+
+
 
 enum UserType {
     CUSTOMER, BUSINESS, ADMIN
