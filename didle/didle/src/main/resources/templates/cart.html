@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didle - Cart</title>
+    <style>
+        /* CSS styles here (same as index.html) */
+        .cart-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="header :: header"></div>
+
+<div class="container">
+    <h2>Your Cart</h2>
+    <div id="cart-items">
+        <!-- Cart items will be displayed here -->
+    </div>
+    <div id="total">
+        <!-- Total price will be displayed here -->
+    </div>
+    <button onclick="checkout()">Checkout</button>
+</div>
+
+<script src="/logout.js"></script>
+<script th:inline="javascript">
+    function loadCartItems() {
+        const userId = /*[[${session.userId}]]*/ null;
+        if (userId) {
+            fetch(`/api/cart/user/${userId}`)
+                .then(response => response.json())
+                .then(items => {
+                    const cartItemsContainer = document.getElementById('cart-items');
+                    let total = 0;
+                    items.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'cart-item';
+                        itemElement.innerHTML = `
+                        <h3>${item.productName}</h3>
+                        <p>Quantity: ${item.quantity}</p>
+                        <p>Price: $${item.price.toFixed(2)}</p>
+                        <button onclick="removeFromCart(${item.id})">Remove</button>
+                    `;
+                        cartItemsContainer.appendChild(itemElement);
+                        total += item.price * item.quantity;
+                    });
+                    document.getElementById('total').innerHTML = `Total: $${total.toFixed(2)}`;
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            alert('Please login to view your cart');
+            window.location.href = '/login';
+        }
+    }
+
+
+    function removeFromCart(cartItemId) {
+        fetch(`/api/cart/${cartItemId}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                alert('Item removed from cart!');
+                location.reload();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    function checkout() {
+        // Implement checkout logic here
+        alert('Checkout functionality not implemented yet.');
+    }
+
+    // Load cart items when the page loads
+    document.addEventListener('DOMContentLoaded', loadCartItems);
+</script>
+</body>
+</html>

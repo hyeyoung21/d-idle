@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didle - Products</title>
+    <style>
+        /* CSS styles here (same as index.html) */
+        .product {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Didle Products</h1>
+</header>
+<nav>
+    <!-- Same navigation as index.html -->
+</nav>
+<div class="container">
+    <h2>All Products</h2>
+    <div id="product-list"></div>
+</div>
+
+<script>
+    // // 로그인 상태 확인
+    // function checkLoginStatus() {
+    //     const token = localStorage.getItem('token');
+    //     const userId = localStorage.getItem('userId');
+    //     if (!token || !userId) {
+    //         alert('Please login to view products');
+    //         window.location.href = '/login';
+    //     }
+    //     return userId;
+    // }
+
+    const userId = checkLoginStatus();
+
+    fetch('/api/products')
+        .then(response => response.json())
+        .then(products => {
+            // 기존 코드...
+        })
+        .catch(error => console.error('Error:', error));
+
+    function addToCart(productId) {
+        fetch('/api/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                userId: userId,
+                productId: productId,
+                quantity: 1
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('Product added to cart!');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+
+    // 로그인 상태 확인 함수
+    // function checkLoginStatus() {
+    //     const userId = localStorage.getItem('userId');
+    //     const username = localStorage.getItem('username');
+    //     if (!userId || !username) {
+    //         alert('Please login to access this page');
+    //         window.location.href = '/login';
+    //         return null;
+    //     }
+    //     return { userId, username };
+    // }
+
+    // 페이지 로드 시 로그인 상태 확인
+    const user = checkLoginStatus();
+    if (user) {
+        console.log('Logged in as:', user.username);
+        // 여기에 페이지별 로직 추가
+        // 예: 상품 목록 가져오기, 장바구니 내용 표시 등
+    }
+
+    // API 요청 시 사용자 ID 포함
+    function fetchUserData() {
+        const userId = localStorage.getItem('userId');
+        fetch(`/api/user-specific-data/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                // 데이터 처리 로직
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function updateNavbar() {
+        const authSection = document.getElementById('auth-section');
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            authSection.innerHTML = `
+            <span>Welcome, ${localStorage.getItem('username')}</span>
+            <button onclick="logout()">Logout</button>
+        `;
+        } else {
+            authSection.innerHTML = `
+            <a href="/login">Login</a>
+            <a href="/signup">Sign Up</a>
+        `;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
+        window.location.href = '/login';
+    }
+
+    // 페이지 로드 시 네비게이션 바 업데이트
+    updateNavbar();
+</script>
+</body>
+</html>

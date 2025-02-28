@@ -2,10 +2,13 @@ package com.example.didle.controller;
 
 import com.example.didle.model.User;
 import com.example.didle.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -48,4 +51,34 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody User user, HttpServletRequest request) {
+        User authenticatedUser = userService.authenticateUser(user.getUsername(), user.getPasswordHash());
+        if (authenticatedUser != null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("userId", authenticatedUser.getId());
+            session.setAttribute("username", authenticatedUser.getUsername());
+            return ResponseEntity.ok(new HashMap<String, Object>() {{
+                put("userId", authenticatedUser.getId());
+                put("username", authenticatedUser.getUsername());
+            }});
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new HashMap<String, String>() {{
+                put("message", "Invalid username or password");
+            }});
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        return ResponseEntity.ok(new HashMap<String, String>() {{
+            put("message", "Logged out successfully");
+        }});
+    }
+
 }
