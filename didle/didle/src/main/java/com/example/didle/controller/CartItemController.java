@@ -1,6 +1,7 @@
 package com.example.didle.controller;
 
 import com.example.didle.model.CartItem;
+import com.example.didle.model.CartItemDTO;
 import com.example.didle.service.CartItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +25,8 @@ public class CartItemController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CartItem>> getCartItemsByUserId(@PathVariable Long userId) {
-        List<CartItem> cartItems = cartItemService.getCartItemsByUserId(userId);
+    public ResponseEntity<List<CartItemDTO>> getCartItemsByUserId(@PathVariable Long userId) {
+        List<CartItemDTO> cartItems = cartItemService.getCartItemsByUserId(userId);
         return ResponseEntity.ok(cartItems);
     }
 

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Didle</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        form { max-width: 300px; margin: 0 auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; }
+        button { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; }
+    </style>
+</head>
+<body>
+<h1>Sign Up for Didle</h1>
+<form id="signupForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="text" id="fullName" placeholder="Full Name">
+    <input type="tel" id="phone" placeholder="Phone">
+    <input type="text" id="address" placeholder="Address">
+    <select id="userType">
+        <option value="CUSTOMER">Customer</option>
+        <option value="BUSINESS">Business</option>
+    </select>
+    <button type="submit">Sign Up</button>
+</form>
+
+<script>
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const userData = {
+            username: document.getElementById('username').value,
+            passwordHash: document.getElementById('password').value, // Note: In real-world, never send plain password
+            email: document.getElementById('email').value,
+            fullName: document.getElementById('fullName').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            userType: document.getElementById('userType').value
+        };
+
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                alert('Sign up successful!');
+                window.location.href = '/login'; // Redirect to login page
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Sign up failed. Please try again.');
+            });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Header</title>
+</head>
+<body>
+<header th:fragment="header">
+  <h1>Welcome to Didle</h1>
+  <div id="auth-section" class="auth-buttons">
+    <th:block th:if="${session.userId != null}">
+      <span th:text="${session.username} + '님 환영합니다!'"></span>
+      <button onclick="logout()">Logout</button>
+    </th:block>
+    <th:block th:unless="${session.userId != null}">
+      <a href="/login">Login</a>
+      <a href="/signup">Sign Up</a>
+    </th:block>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/products">Products</a></li>
+      <li><a href="/cart">Cart</a></li>
+      <li><a href="/orders">Orders</a></li>
+    </ul>
+  </nav>
+</header>
+
+
+</body>
+</html>
