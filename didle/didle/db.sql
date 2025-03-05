@@ -85,7 +85,6 @@ CREATE TABLE cart_items (
                             cart_item_id SERIAL PRIMARY KEY,
                             user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
                             product_id INT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
-                            quantity INT NOT NULL DEFAULT 1
 );
 
 

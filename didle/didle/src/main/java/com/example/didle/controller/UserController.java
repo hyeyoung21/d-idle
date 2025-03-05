@@ -59,9 +59,11 @@ public class UserController {
             HttpSession session = request.getSession();
             session.setAttribute("userId", authenticatedUser.getId());
             session.setAttribute("username", authenticatedUser.getUsername());
+            session.setAttribute("userType", authenticatedUser.getUserType());
             return ResponseEntity.ok(new HashMap<String, Object>() {{
                 put("userId", authenticatedUser.getId());
                 put("username", authenticatedUser.getUsername());
+                put("userType", authenticatedUser.getUserType());
             }});
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new HashMap<String, String>() {{

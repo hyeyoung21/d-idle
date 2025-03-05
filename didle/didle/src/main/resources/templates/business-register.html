@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 50%;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    h2 {
+      text-align: center;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-top: 10px;
+    }
+    input[type="text"], input[type="tel"], textarea {
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
+    }
+    .error-message {
+      color: red;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Business Registration</h2>
+  <form id="business-registration-form">
+    <label for="businessName">Business Name:</label>
+    <input type="text" id="businessName" name="businessName" required>
+
+    <label for="businessNumber">Business Number:</label>
+    <input type="text" id="businessNumber" name="businessNumber" required>
+
+    <label for="businessAddress">Business Address:</label>
+    <textarea id="businessAddress" name="businessAddress" rows="3" required></textarea>
+
+    <label for="businessPhone">Business Phone:</label>
+    <input type="tel" id="businessPhone" name="businessPhone" required>
+
+    <button type="button" onclick="registerBusiness()">Register</button>
+    <div id="error-message" class="error-message"></div>
+  </form>
+</div>
+
+<script>
+  function registerBusiness() {
+    const formData = {
+      businessName: document.getElementById('businessName').value,
+      businessNumber: document.getElementById('businessNumber').value,
+      businessAddress: document.getElementById('businessAddress').value,
+      businessPhone: document.getElementById('businessPhone').value
+    };
+
+    fetch('/api/business/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    })
+            .then(response => {
+              if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
+              }
+              return response.json();
+            })
+            .then(data => {
+              alert('Business registered successfully! Please log in again.');
+              window.location.href = '/login';
+            })
+            .catch(error => {
+              document.getElementById('error-message').innerText = error.message;
+              console.error('Error:', error);
+            });
+  }
+</script>
+</body>
+</html>

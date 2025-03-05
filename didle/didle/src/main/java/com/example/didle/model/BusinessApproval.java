@@ -15,7 +15,7 @@ public class BusinessApproval {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "business_id", nullable = false)
+    @JoinColumn(name = "business_id")
     private Business business;
 
     @Column(name = "approved_at", updatable = false)
@@ -34,4 +34,3 @@ public class BusinessApproval {
         PENDING, APPROVED, REJECTED
     }
 }
-

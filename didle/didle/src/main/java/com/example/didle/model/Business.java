@@ -33,6 +33,9 @@ public class Business {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @OneToOne(mappedBy = "business", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private BusinessApproval approval;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

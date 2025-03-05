@@ -12,118 +12,101 @@
             margin-bottom: 10px;
         }
     </style>
+    <link rel="stylesheet" href="/header.css">
 </head>
 <body>
-<header>
-    <h1>Didle Products</h1>
-</header>
-<nav>
-    <!-- Same navigation as index.html -->
-</nav>
+<!-- Include the header -->
+<div th:replace="header :: header"></div>
+
 <div class="container">
     <h2>All Products</h2>
-    <div id="product-list"></div>
+    <form id="add-to-cart-form">
+        <div id="product-list">
+            <!-- Products will be listed here -->
+        </div>
+        <button type="button" onclick="addSelectedToCart()">Add Selected to Cart</button>
+    </form>
 </div>
 
-<script>
-    // // 로그인 상태 확인
-    // function checkLoginStatus() {
-    //     const token = localStorage.getItem('token');
-    //     const userId = localStorage.getItem('userId');
-    //     if (!token || !userId) {
-    //         alert('Please login to view products');
-    //         window.location.href = '/login';
-    //     }
-    //     return userId;
-    // }
+<script th:inline="javascript">
+    // Function to fetch and display products
+    function loadProducts() {
+        const userId = /*[[${session.userId}]]*/ null;
+        if (!userId) {
+            alert('Please login to view products');
+            window.location.href = '/login';
+            return;
+        }
 
-    const userId = checkLoginStatus();
+        // Fetch cart items for the user
+        fetch(`/api/cart/user/${userId}`)
+            .then(response => response.json())
+            .then(cartItems => {
+                // Fetch all products
+                fetch('/api/products')
+                    .then(response => response.json())
+                    .then(products => {
+                        const productList = document.getElementById('product-list');
+                        products.forEach(product => {
+                            const isInCart = cartItems.some(item => item.productId == product.id);
+                            const productElement = document.createElement('div');
+                            productElement.className = 'product';
 
-    fetch('/api/products')
-        .then(response => response.json())
-        .then(products => {
-            // 기존 코드...
-        })
-        .catch(error => console.error('Error:', error));
+                            if (isInCart) {
+                                productElement.innerHTML = `
+                                    <h3>${product.name}</h3>
+                                    <p>${product.description}</p>
+                                    <p>Price: $${product.price}</p>
+                                    <p>Stock: ${product.stockQuantity}</p>
+                                    <p>이미 장바구니에 있습니다.</p>
+                                `;
+                            } else {
+                                productElement.innerHTML = `
+                                    <input type="checkbox" id="product-${product.id}" name="selectedProducts" value="${product.id}">
+                                    <label for="product-${product.id}">
+                                        <h3>${product.name}</h3>
+                                        <p>${product.description}</p>
+                                        <p>Price: $${product.price}</p>
+                                        <p>Stock: ${product.stockQuantity}</p>
+                                    </label>
+                                `;
+                            }
+                            productList.appendChild(productElement);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching products:', error));
+            })
+            .catch(error => console.error('Error fetching cart items:', error));
+    }
 
-    function addToCart(productId) {
-        fetch('/api/cart', {
+    function addSelectedToCart() {
+        const selectedProducts = document.querySelectorAll('input[name="selectedProducts"]:checked');
+        const productIds = Array.from(selectedProducts).map(product => Number(product.value));
+
+        fetch('/api/cart/batch', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                userId: userId,
-                productId: productId,
-                quantity: 1
-            })
+            body: JSON.stringify(productIds)
         })
-            .then(response => response.json())
-            .then(data => {
-                alert('Product added to cart!');
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
             })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-    }
-
-
-    // 로그인 상태 확인 함수
-    // function checkLoginStatus() {
-    //     const userId = localStorage.getItem('userId');
-    //     const username = localStorage.getItem('username');
-    //     if (!userId || !username) {
-    //         alert('Please login to access this page');
-    //         window.location.href = '/login';
-    //         return null;
-    //     }
-    //     return { userId, username };
-    // }
-
-    // 페이지 로드 시 로그인 상태 확인
-    const user = checkLoginStatus();
-    if (user) {
-        console.log('Logged in as:', user.username);
-        // 여기에 페이지별 로직 추가
-        // 예: 상품 목록 가져오기, 장바구니 내용 표시 등
-    }
-
-    // API 요청 시 사용자 ID 포함
-    function fetchUserData() {
-        const userId = localStorage.getItem('userId');
-        fetch(`/api/user-specific-data/${userId}`)
-            .then(response => response.json())
             .then(data => {
-                // 데이터 처리 로직
+                alert(data);
+                window.location.href = '/cart';
             })
             .catch(error => console.error('Error:', error));
     }
 
-    function updateNavbar() {
-        const authSection = document.getElementById('auth-section');
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-            authSection.innerHTML = `
-            <span>Welcome, ${localStorage.getItem('username')}</span>
-            <button onclick="logout()">Logout</button>
-        `;
-        } else {
-            authSection.innerHTML = `
-            <a href="/login">Login</a>
-            <a href="/signup">Sign Up</a>
-        `;
-        }
-    }
 
-    function logout() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        window.location.href = '/login';
-    }
-
-    // 페이지 로드 시 네비게이션 바 업데이트
-    updateNavbar();
+    // Load products when the page loads
+    document.addEventListener('DOMContentLoaded', loadProducts);
 </script>
+<script src="/logout.js"></script>
 </body>
 </html>
