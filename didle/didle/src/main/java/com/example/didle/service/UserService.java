@@ -1,7 +1,9 @@
 package com.example.didle.service;
 
 import com.example.didle.model.User;
+import com.example.didle.model.User.UserType;
 import com.example.didle.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,5 +43,12 @@ public class UserService {
             return user;
         }
         return null;
+    }
+
+    public void changeUserType(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setUserType(UserType.BUSINESS);
+        userRepository.save(user);
     }
 }

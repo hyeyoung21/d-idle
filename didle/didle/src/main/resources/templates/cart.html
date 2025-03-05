@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Didle - Cart</title>
+    <link rel="stylesheet" href="/header.css">
     <style>
         /* CSS styles here (same as index.html) */
         .cart-item {
@@ -28,27 +29,34 @@
     <button onclick="checkout()">Checkout</button>
 </div>
 
-<script src="/logout.js"></script>
 <script th:inline="javascript">
+    let cartItems = [];
+
     function loadCartItems() {
         const userId = /*[[${session.userId}]]*/ null;
         if (userId) {
-            fetch(`/api/cart/user/${userId}`)
+            fetch(`/api/cart/user`)
                 .then(response => response.json())
                 .then(items => {
+                    cartItems = items;
                     const cartItemsContainer = document.getElementById('cart-items');
                     let total = 0;
+                    cartItemsContainer.innerHTML = ''; // Clear previous cart items
+
                     items.forEach(item => {
                         const itemElement = document.createElement('div');
                         itemElement.className = 'cart-item';
                         itemElement.innerHTML = `
-                        <h3>${item.productName}</h3>
-                        <p>Quantity: ${item.quantity}</p>
-                        <p>Price: $${item.price.toFixed(2)}</p>
-                        <button onclick="removeFromCart(${item.id})">Remove</button>
-                    `;
+                            <h3>${item.productName}</h3>
+                            <p>
+                                Quantity:
+                                <input type="number" id="quantity-${item.id}" value="1" min="1" max="10" onchange="updateTotal()">
+                            </p>
+                            <p>Price: $${item.price.toFixed(2)}</p>
+                            <button onclick="removeFromCart(${item.id})">Remove</button>
+                        `;
                         cartItemsContainer.appendChild(itemElement);
-                        total += item.price * item.quantity;
+                        total += item.price;
                     });
                     document.getElementById('total').innerHTML = `Total: $${total.toFixed(2)}`;
                 })
@@ -58,7 +66,6 @@
             window.location.href = '/login';
         }
     }
-
 
     function removeFromCart(cartItemId) {
         fetch(`/api/cart/${cartItemId}`, {
@@ -74,12 +81,41 @@
     }
 
     function checkout() {
-        // Implement checkout logic here
-        alert('Checkout functionality not implemented yet.');
+        const productQuantities = {};
+        cartItems.forEach(item => {
+            const quantity = document.getElementById(`quantity-${item.id}`).value;
+            productQuantities[item.productId] = parseInt(quantity);
+        });
+
+        fetch('/api/cart/checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(productQuantities)
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                if (message === 'Checkout successful') {
+                    window.location.href = '/orders'; // Redirect to home page or order confirmation page
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function updateTotal() {
+        let total = 0;
+        cartItems.forEach(item => {
+            const quantity = document.getElementById(`quantity-${item.id}`).value;
+            total += item.price * quantity;
+        });
+        document.getElementById('total').innerHTML = `Total: $${total.toFixed(2)}`;
     }
 
     // Load cart items when the page loads
     document.addEventListener('DOMContentLoaded', loadCartItems);
 </script>
+<script src="/logout.js"></script>
 </body>
 </html>

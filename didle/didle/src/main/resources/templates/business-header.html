@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Business Header</title>
+    <style>
+        /* CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #2c3e50;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 1rem;
+        }
+        nav {
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 0.5rem;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+        nav ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+        }
+        .auth-buttons {
+            text-align: right;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<header th:fragment="business-header">
+    <h1>Didle Business Dashboard</h1>
+    <div id="auth-section" class="auth-buttons">
+        <span th:text="${session.username} + '님 환영합니다!'"></span>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="/business/dashboard">Dashboard</a></li>
+            <li><a href="/business/profile">Business Profile</a></li>
+            <li><a href="/business/products">My Products</a></li>
+            <li><a href="/business/orders">Orders</a></li>
+        </ul>
+    </nav>
+</header>
+</body>
+</html>

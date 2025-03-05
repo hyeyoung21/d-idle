@@ -1,15 +1,16 @@
 package com.example.didle.service;
 
-import com.example.didle.model.CartItem;
-import com.example.didle.model.CartItemDTO;
+import com.example.didle.model.*;
 import com.example.didle.repository.CartItemRepository;
 import com.example.didle.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,19 +18,22 @@ import java.util.stream.Collectors;
 public class CartItemService {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final OrderService orderService;
 
-    public CartItemService(CartItemRepository cartItemRepository, ProductRepository productRepository) {
+    public CartItemService(CartItemRepository cartItemRepository, ProductRepository productRepository, OrderService orderService) {
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.orderService = orderService;
     }
 
-    public CartItem addToCart(CartItem cartItem) {
-        Optional<CartItem> existingItem = cartItemRepository.findByUserIdAndProductId(cartItem.getUserId(), cartItem.getProduct().getId());
-        if (existingItem.isPresent()) {
-            CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + cartItem.getQuantity());
-            return cartItemRepository.save(item);
-        }
+    public CartItem addToCart(Long userId, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        CartItem cartItem = new CartItem();
+        cartItem.setUserId(userId);
+        cartItem.setProduct(product);
+
         return cartItemRepository.save(cartItem);
     }
 
@@ -44,7 +48,6 @@ public class CartItemService {
         dto.setProductId(cartItem.getProduct().getId());
         dto.setProductName(cartItem.getProduct().getName());
         dto.setPrice(cartItem.getProduct().getPrice());
-        dto.setQuantity(cartItem.getQuantity());
         return dto;
     }
 
@@ -52,11 +55,54 @@ public class CartItemService {
         cartItemRepository.deleteById(cartItemId);
     }
 
-    public void updateCartItemQuantity(Long cartItemId, int quantity) {
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new EntityNotFoundException("CartItem not found"));
-        cartItem.setQuantity(quantity);
-        cartItemRepository.save(cartItem);
+    public List<CartItem> addMultipleToCart(List<Long> productIds, Long userId) {
+        List<CartItem> cartItems = productIds.stream()
+                .map(productId -> {
+                    Product product = productRepository.findById(productId)
+                            .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+                    CartItem cartItem = new CartItem();
+                    cartItem.setProduct(product);
+                    cartItem.setUserId(userId);
+                    return cartItem;
+                })
+                .collect(Collectors.toList());
+
+        return cartItemRepository.saveAll(cartItems);
+    }
+
+    @Transactional
+    public void checkout(Long userId, Map<Long, Integer> productQuantities) {
+        List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        List<OrderItemDTO> orderItems = new ArrayList<>();
+
+        for (CartItem cartItem : cartItems) {
+            Product product = cartItem.getProduct();
+            Integer quantity = productQuantities.get(product.getId());
+            if (quantity != null && quantity > 0) {
+                if (product.getStockQuantity() < quantity) {
+                    throw new IllegalStateException("Not enough stock for product: " + product.getName());
+                }
+                product.setStockQuantity(product.getStockQuantity() - quantity);
+                productRepository.save(product);
+
+                BigDecimal itemPrice = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+                totalPrice = totalPrice.add(itemPrice);
+
+                OrderItemDTO orderItemDTO = new OrderItemDTO();
+                orderItemDTO.setProductId(product.getId());
+                orderItemDTO.setQuantity(quantity);
+                orderItemDTO.setPrice(itemPrice);
+                orderItems.add(orderItemDTO);
+            }
+        }
+
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setUserId(userId);
+        orderDTO.setTotalPrice(totalPrice);
+        orderDTO.setOrderItems(orderItems);
+
+        orderService.createOrder(orderDTO);
+        cartItemRepository.deleteByUserId(userId);
     }
 }
-

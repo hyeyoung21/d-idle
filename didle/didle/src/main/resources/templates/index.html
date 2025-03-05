@@ -4,75 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Didle - Home</title>
-    <style>
-        /* CSS styles here */
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #333;
-            color: #fff;
-            text-align: center;
-            padding: 1rem;
-        }
-        nav {
-            background: #444;
-            color: #fff;
-            padding: 0.5rem;
-        }
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        nav ul li {
-            display: inline;
-            margin-right: 10px;
-        }
-        nav ul li a {
-            color: #fff;
-            text-decoration: none;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-            padding: 20px;
-        }
-        .auth-buttons {
-            text-align: right;
-            padding: 0.5rem;
-        }
-    </style>
+    <link rel="stylesheet" href="/header.css">
 </head>
 <body>
 <!-- Include the header -->
 <div th:replace="header :: header"></div>
 
 <div class="container">
-    <h2>Featured Products</h2>
-    <div id="featured-products"></div>
+    <h2>Most Sold Product</h2>
+    <div id="featured-product"></div>
 </div>
 
 <script src="/logout.js"></script>
 <script>
-    // JavaScript to fetch and display featured products
-    fetch('/api/products')
+    // JavaScript to fetch and display the most sold product
+    fetch('/api/products/most-sold')
         .then(response => response.json())
-        .then(products => {
-            const featuredProducts = products.slice(0, 3); // Display first 3 products
-            const productContainer = document.getElementById('featured-products');
-            featuredProducts.forEach(product => {
-                const productElement = document.createElement('div');
-                productElement.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p>${product.description}</p>
-                    <p>Price: $${product.price}</p>
-                `;
-                productContainer.appendChild(productElement);
-            });
+        .then(product => {
+            const productContainer = document.getElementById('featured-product');
+            productContainer.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <p>Price: $${product.price}</p>
+            `;
         })
         .catch(error => console.error('Error:', error));
 </script>
