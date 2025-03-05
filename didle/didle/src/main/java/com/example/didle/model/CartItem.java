@@ -17,10 +17,12 @@ public class CartItem {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(nullable = false)
-    private Integer quantity = 1;
+    public String getProductName() {
+        return product != null ? product.getName() : "판매 종료된 상품";
+    }
+
 }

@@ -12,101 +12,59 @@
             margin-bottom: 10px;
         }
     </style>
+     <link rel="stylesheet" href="/header.css">
 </head>
 <body>
-<header>
-    <h1>Your Orders</h1>
-</header>
+<div th:replace="header :: header"></div>
 <nav>
     <!-- Same navigation as index.html -->
 </nav>
 <div class="container">
     <h2>Order History</h2>
-    <div id="order-list"></div>
+    <div id="order-list">
+        <!-- Order items will be displayed here -->
+    </div>
 </div>
-
-<script>
-    fetch('/api/orders/user/1') // Assuming user ID 1 for now
-        .then(response => response.json())
-        .then(orders => {
-            const orderList = document.getElementById('order-list');
-            orders.forEach(order => {
-                const orderElement = document.createElement('div');
-                orderElement.className = 'order';
-                orderElement.innerHTML = `
-                        <h3>Order #${order.id}</h3>
-                        <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                        <p>Status: ${order.status}</p>
-                        <p>Total: $${order.totalPrice}</p>
-                        <h4>Items:</h4>
-                        <ul>
-                            ${order.orderItems.map(item => `
-                                <li>${item.productName} - Quantity: ${item.quantity}, Price: $${item.price}</li>
-                            `).join('')}
-                        </ul>
-                    `;
-                orderList.appendChild(orderElement);
-            });
-        })
-        .catch(error => console.error('Error:', error));
-
-
-
-    // 로그인 상태 확인 함수
-    function checkLoginStatus() {
-        const userId = localStorage.getItem('userId');
-        const username = localStorage.getItem('username');
-        if (!userId || !username) {
-            alert('Please login to access this page');
-            window.location.href = '/login';
-            return null;
-        }
-        return { userId, username };
-    }
-
-    // 페이지 로드 시 로그인 상태 확인
-    const user = checkLoginStatus();
-    if (user) {
-        console.log('Logged in as:', user.username);
-        // 여기에 페이지별 로직 추가
-        // 예: 상품 목록 가져오기, 장바구니 내용 표시 등
-    }
-
-    // API 요청 시 사용자 ID 포함
-    function fetchUserData() {
-        const userId = localStorage.getItem('userId');
-        fetch(`/api/user-specific-data/${userId}`)
-            .then(response => response.json())
-            .then(data => {
-                // 데이터 처리 로직
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
-    function updateNavbar() {
-        const authSection = document.getElementById('auth-section');
-        const userId = localStorage.getItem('userId');
+<script th:inline="javascript">
+    function loadOrders() {
+        const userId = /*[[${session.userId}]]*/ null;
         if (userId) {
-            authSection.innerHTML = `
-            <span>Welcome, ${localStorage.getItem('username')}</span>
-            <button onclick="logout()">Logout</button>
-        `;
+            fetch(`/api/orders/user/${userId}`)
+                .then(response => response.json())
+                .then(orders => {
+                    const orderList = document.getElementById('order-list');
+                    orderList.innerHTML = ''; // Clear previous order list
+
+                    orders.forEach(order => {
+                        const orderElement = document.createElement('div');
+                        orderElement.className = 'order';
+                        let orderItemsHtml = '';
+                        order.orderItems.forEach(item => {
+                            orderItemsHtml += `<li>${item.productName} - Quantity: ${item.quantity}, Price: $${item.price}</li>`;
+                        });
+
+                        orderElement.innerHTML = `
+                            <h3>Order #${order.id}</h3>
+                            <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                            <p>Status: ${order.status}</p>
+                            <p>Total: $${order.totalPrice}</p>
+                            <h4>Items:</h4>
+                            <ul>
+                                ${orderItemsHtml}
+                            </ul>
+                        `;
+                        orderList.appendChild(orderElement);
+                    })
+                })
+                .catch(error => console.error('Error:', error));
         } else {
-            authSection.innerHTML = `
-            <a href="/login">Login</a>
-            <a href="/signup">Sign Up</a>
-        `;
+            alert('Please login to view your orders');
+            window.location.href = '/login';
         }
     }
-
-    function logout() {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
-        window.location.href = '/login';
-    }
-
-    // 페이지 로드 시 네비게이션 바 업데이트
-    updateNavbar();
+    // Load orders when the page loads
+    document.addEventListener('DOMContentLoaded', loadOrders);
 </script>
+
 </body>
 </html>

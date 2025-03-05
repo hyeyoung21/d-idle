@@ -45,11 +45,8 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
-
+    public enum UserType {
+        CUSTOMER, BUSINESS, ADMIN
+    }
 }
 
-
-
-enum UserType {
-    CUSTOMER, BUSINESS, ADMIN
-}
