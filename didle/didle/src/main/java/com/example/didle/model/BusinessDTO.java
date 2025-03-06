@@ -14,3 +14,5 @@ public class BusinessDTO {
     private String businessPhone; // 사업체 전화번호
     private String approvalStatus;
 }
+
+

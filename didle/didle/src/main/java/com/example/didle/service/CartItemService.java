@@ -86,8 +86,9 @@ public class CartItemService {
                 product.setStockQuantity(product.getStockQuantity() - quantity);
                 productRepository.save(product);
 
-                BigDecimal itemPrice = product.getPrice().multiply(BigDecimal.valueOf(quantity));
-                totalPrice = totalPrice.add(itemPrice);
+//                BigDecimal itemPrice = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+                BigDecimal itemPrice = product.getPrice();
+                totalPrice = totalPrice.add(itemPrice).multiply(BigDecimal.valueOf(quantity));
 
                 OrderItemDTO orderItemDTO = new OrderItemDTO();
                 orderItemDTO.setProductId(product.getId());

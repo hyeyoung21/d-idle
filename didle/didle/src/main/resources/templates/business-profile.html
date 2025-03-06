@@ -1,158 +1,180 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Business Profile</title>
-  <link rel="stylesheet" href="/header.css">
-  <style>
-    /* General body styling */
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-      color: #333;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Profile</title>
+    <link rel="stylesheet" href="/header.css">
+    <style> body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        background-color: #f9f9f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
     }
 
-    /* Container to hold the content */
     .container {
-      width: 80%;
-      margin: 20px auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* Heading styles */
     h2 {
-      color: #2c3e50;
-      text-align: center;
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 2rem;
     }
 
-    /* Form styles */
-    form {
-      display: flex;
-      flex-direction: column;
+    #business-profile-form {
+        display: grid;
+        gap: 1rem;
     }
 
-    /* Label styles */
     label {
-      margin-top: 10px;
-      color: #34495e;
+        font-weight: bold;
+        color: #34495e;
     }
 
-    /* Input and textarea styles */
-    input[type="text"],
-    input[type="tel"],
-    textarea {
-      padding: 8px;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box; /* Makes padding and border part of the element's total width */
+    input[type="text"], input[type="tel"], textarea {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
     }
 
-    /* Button styles */
     button {
-      background-color: #3498db;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
+        background-color: #3498db;
+        color: #fff;
+        padding: 0.8rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
     }
 
     button:hover {
-      background-color: #2980b9;
+        background-color: #2980b9;
     }
 
-    /* Approval status display */
     #approval-status {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: #f9f9f9;
+        margin-top: 2rem;
+        padding: 1rem;
+        background-color: #f0f8ff;
+        border-radius: 4px;
     }
 
     #approval-status h3 {
-      color: #e74c3c; /* Reddish color for important information */
-      margin-bottom: 5px;
+        color: #2c3e50;
+        margin-top: 0;
     }
 
-    /* General link styling */
-    a {
-      color: #3498db;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+    #approvalStatusText {
+        font-weight: bold;
+        color: #3498db;
+    } </style>
 </head>
 <body>
 <div th:replace="business-header :: business-header"></div>
 <div class="container">
-  <h2>Business Profile</h2>
-  <form id="business-profile-form">
-    <label for="businessName">Business Name:</label>
-    <input type="text" id="businessName" name="businessName" th:value="${business.businessName}" required>
+    <h2>Business Profile</h2>
+    <form id="business-profile-form">
+        <label for="businessName">Business Name:</label>
+        <input type="text" id="businessName" name="businessName" required>
 
-    <label for="businessNumber">Business Number:</label>
-    <input type="text" id="businessNumber" name="businessNumber" th:value="${business.businessNumber}" required>
+        <label for="businessNumber">Business Number:</label>
+        <input type="text" id="businessNumber" name="businessNumber" required>
 
-    <label for="businessAddress">Business Address:</label>
-    <textarea id="businessAddress" name="businessAddress" rows="3" th:text="${business.businessAddress}" required></textarea>
+        <label for="businessAddress">Business Address:</label>
+        <textarea id="businessAddress" name="businessAddress" rows="3" required></textarea>
 
-    <label for="businessPhone">Business Phone:</label>
-    <input type="tel" id="businessPhone" name="businessPhone" th:value="${business.businessPhone}" required>
+        <label for="businessPhone">Business Phone:</label>
+        <input type="tel" id="businessPhone" name="businessPhone" required>
 
-    <button type="button" onclick="updateBusinessProfile()">Update Profile</button>
-  </form>
-  <div id="approval-status">
-    <h3>Approval Status:</h3>
-    <p th:text="${business.approval.status}"></p>
-  </div>
+        <button type="button" onclick="updateBusinessProfile()">Update Profile</button>
+    </form>
+    <div id="approval-status">
+        <h3>Approval Status:</h3>
+        <p id="approvalStatusText"></p>
+    </div>
 </div>
-
+<script src="/logout.js"></script>
 <script>
-  function updateBusinessProfile() {
-    const formData = {
-      businessName: document.getElementById('businessName').value,
-      businessNumber: document.getElementById('businessNumber').value,
-      businessAddress: document.getElementById('businessAddress').value,
-      businessPhone: document.getElementById('businessPhone').value
-    };
+    document.addEventListener('DOMContentLoaded', function () {
+        loadBusinessProfile();
+    });
 
-    fetch('/api/business/update', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    })
+    function loadBusinessProfile() {
+        fetch('/api/business/profile')
             .then(response => {
-              if (!response.ok) {
-                return response.text().then(text => { throw new Error(text) });
-              }
-              return response.json();
+                if (!response.ok) {
+                    throw new Error('Failed to load business profile');
+                }
+                return response.json();
             })
-            .then(data => {
-              alert('Business profile updated successfully!');
-              location.reload();
+            .then(business => {
+                document.getElementById('businessName').value = business.businessName;
+                document.getElementById('businessNumber').value = business.businessNumber;
+                document.getElementById('businessAddress').value = business.businessAddress;
+                document.getElementById('businessPhone').value = business.businessPhone;
+
+                // business.approval이 존재하는지 확인
+                if (business.approvalStatus) {
+                    document.getElementById('approvalStatusText').textContent = business.approvalStatus;
+                } else {
+                    document.getElementById('approvalStatusText').textContent = '승인 정보 없음';
+                }
             })
             .catch(error => {
-              alert('Error updating business profile: ' + error.message);
-              console.error('Error:', error);
+                console.error('Error:', error);
+                alert('Failed to load business profile');
             });
-  }
+    }
+
+
+    function updateBusinessProfile() {
+        const formData = {
+            businessName: document.getElementById('businessName').value,
+            businessNumber: document.getElementById('businessNumber').value,
+            businessAddress: document.getElementById('businessAddress').value,
+            businessPhone: document.getElementById('businessPhone').value
+        };
+
+        fetch('/api/business/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.text().then(text => {
+                        throw new Error(text)
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Business profile updated successfully!');
+                loadBusinessProfile();
+            })
+            .catch(error => {
+                alert('Error updating business profile: ' + error.message);
+                console.error('Error:', error);
+            });
+    }
+
 </script>
 </body>
 </html>

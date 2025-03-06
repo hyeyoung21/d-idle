@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기업 대시보드</title>
+    <link rel="stylesheet" href="/header.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-item {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .dashboard-item h2 {
+            color: #3498db;
+            margin-top: 0;
+            margin-bottom: 0.8rem;
+            font-size: 1.5rem;
+        }
+
+        .stat {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="business-header :: business-header"></div>
+<div class="container">
+    <h1>기업 대시보드</h1>
+
+    <div class="dashboard-item">
+        <h2>총 매출</h2>
+        <p class="stat" id="totalSales">$0.00</p>
+    </div>
+
+    <div class="dashboard-item">
+        <h2>총 주문 수</h2>
+        <p class="stat" id="totalOrders">0</p>
+    </div>
+
+    <div class="dashboard-item">
+        <h2>재고 있는 상품 수</h2>
+        <p class="stat" id="productsInStock">0</p>
+    </div>
+
+    <div class="dashboard-item">
+        <h2>최근 주문</h2>
+        <table id="recentOrdersTable">
+            <thead>
+            <tr>
+                <th>주문 ID</th>
+                <th>총 금액</th>
+                <th>상태</th>
+                <th>주문 일시</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- 최근 주문 데이터가 여기에 동적으로 추가됩니다 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="/logout.js"></script>
+<script th:inline="javascript">
+    const userId = /*[[${session.userId}]]*/ null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 대시보드 데이터를 가져오는 함수
+        function fetchDashboardData() {
+            if (!userId) {
+                console.error('User ID가 없습니다.');
+                return;
+            }
+
+            fetch(`/api/business/dashboard?userId=${userId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 데이터를 화면에 표시합니다.
+                    document.getElementById('totalSales').textContent = formatCurrency(data.totalSales);
+                    document.getElementById('totalOrders').textContent = data.totalOrders;
+                    document.getElementById('productsInStock').textContent = data.productsInStock;
+
+                    // 최근 주문 목록을 표시합니다.
+                    const recentOrdersTableBody = document.querySelector('#recentOrdersTable tbody');
+                    recentOrdersTableBody.innerHTML = ''; // 기존 목록을 비웁니다.
+
+                    data.recentOrders.forEach(order => {
+                        const row = `
+                            <tr>
+                                <td>${order.id}</td>
+                                <td>${formatCurrency(order.totalPrice)}</td>
+                                <td>${order.status}</td>
+                                <td>${formatDate(order.createdAt)}</td>
+                            </tr>
+                        `;
+                        recentOrdersTableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => {
+                    console.error('There was a problem fetching dashboard data:', error);
+                });
+        }
+
+        // 통화 포맷 함수
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
+        }
+
+        // 날짜 포맷 함수
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric'
+            });
+        }
+
+        fetchDashboardData(); // 페이지 로드 시 데이터 가져오기
+    });
+</script>
+</body>
+</html>
