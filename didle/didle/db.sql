@@ -103,3 +103,6 @@ CREATE TRIGGER update_product_timestamp
     BEFORE UPDATE ON products
     FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
+SELECT SUM(o.total_Price) FROM Orders o JOIN Users u ON o.user_Id = u.user_id
+WHERE u.business_id = :businessId;
+AND o.status <> 'CANCELLED';

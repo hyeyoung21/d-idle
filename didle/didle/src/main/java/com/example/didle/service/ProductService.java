@@ -53,15 +53,6 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    public void decreaseStock(Long productId, int quantity) {
-        Product product = getProductById(productId);
-        if (product.getStockQuantity() < quantity) {
-            throw new IllegalStateException("Not enough stock for product: " + productId);
-        }
-        product.setStockQuantity(product.getStockQuantity() - quantity);
-        productRepository.save(product);
-    }
-
     public Product getMostSoldProduct() {
         List<Object[]> result = orderItemRepository.findMostSoldProductId();
         if (result.isEmpty()) {
@@ -88,6 +79,19 @@ public class ProductService {
         dto.setStockQuantity(product.getStockQuantity());
         // 필요한 다른 필드들도 설정
         return dto;
+    }
+
+    public ProductDTO addProduct(ProductDTO productDTO, Long businessId) {
+        Product product = new Product();
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setStockQuantity(productDTO.getStockQuantity());
+        product.setBusinessId(businessId);
+
+        Product savedProduct = productRepository.save(product);
+
+        return convertToDTO(savedProduct);
     }
 
 }

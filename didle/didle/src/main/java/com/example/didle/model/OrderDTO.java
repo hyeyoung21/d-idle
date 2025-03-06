@@ -12,8 +12,10 @@ import java.util.List;
 public class OrderDTO {
     private Long id;
     private Long userId;
+    private String customerName;
     private BigDecimal totalPrice;
     private Order.OrderStatus status;
     private LocalDateTime createdAt;
     private List<OrderItemDTO> orderItems;
 }
+
