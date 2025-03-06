@@ -1,10 +1,6 @@
 package com.example.didle.service;
 
-import com.example.didle.model.Order;
-import com.example.didle.model.OrderDTO;
-import com.example.didle.model.OrderItem;
-import com.example.didle.model.OrderItemDTO;
-import com.example.didle.model.Product;
+import com.example.didle.model.*;
 import com.example.didle.repository.OrderRepository;
 import com.example.didle.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,10 +16,12 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
 
-    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository, UserService userService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.userService = userService;
     }
 
     public OrderDTO getOrderById(Long orderId) {
@@ -46,6 +44,11 @@ public class OrderService {
         dto.setTotalPrice(order.getTotalPrice());
         dto.setStatus(order.getStatus());
         dto.setCreatedAt(order.getCreatedAt());
+
+        // User 정보 설정
+        User user = userService.getUserById(order.getUserId());
+        dto.setCustomerName(user != null ? user.getUsername() : "Unknown User");
+
         dto.setOrderItems(order.getOrderItems().stream()
                 .map(this::convertToOrderItemDTO)
                 .collect(Collectors.toList()));
@@ -97,5 +100,24 @@ public class OrderService {
 
         order.setOrderItems(orderItems);
         return orderRepository.save(order);
+    }
+
+    public List<OrderDTO> getAllOrdersByBusinessId(Long businessId) {
+        return orderRepository.findByBusinessId(businessId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public OrderDTO getOrderById(Long id, Long businessId) {
+        Order order = orderRepository.findByIdAndBusinessId(id, businessId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        return convertToDTO(order);
+    }
+
+    public OrderDTO updateOrderStatus(Long id, String status, Long businessId) {
+        Order order = orderRepository.findByIdAndBusinessId(id, businessId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        order.setStatus(Order.OrderStatus.valueOf(status));
+        return convertToDTO(orderRepository.save(order));
     }
 }

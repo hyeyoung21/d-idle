@@ -1,6 +1,8 @@
 package com.example.didle.controller;
 
+import com.example.didle.model.Business;
 import com.example.didle.model.User;
+import com.example.didle.service.BusinessService;
 import com.example.didle.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -9,20 +11,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final BusinessService businessService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, BusinessService businessService) {
         this.userService = userService;
-    }
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+        this.businessService = businessService;
     }
 
     @GetMapping("/{id}")
@@ -60,17 +59,29 @@ public class UserController {
             session.setAttribute("userId", authenticatedUser.getId());
             session.setAttribute("username", authenticatedUser.getUsername());
             session.setAttribute("userType", authenticatedUser.getUserType());
-            return ResponseEntity.ok(new HashMap<String, Object>() {{
-                put("userId", authenticatedUser.getId());
-                put("username", authenticatedUser.getUsername());
-                put("userType", authenticatedUser.getUserType());
-            }});
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("userId", authenticatedUser.getId());
+            responseBody.put("username", authenticatedUser.getUsername());
+            responseBody.put("userType", authenticatedUser.getUserType());
+
+            // BUSINESS 유저 타입인 경우 비즈니스 정보 추가
+            if (User.UserType.BUSINESS.equals(authenticatedUser.getUserType())) {
+                Business business = businessService.getBusinessByUserId(authenticatedUser.getId());
+                if (business != null) {
+                    session.setAttribute("businessId", business.getId());
+                    session.setAttribute("businessName", business.getBusinessName());
+                    responseBody.put("businessId", business.getId());
+                    responseBody.put("businessName", business.getBusinessName());
+                }
+            }
+
+            return ResponseEntity.ok(responseBody);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new HashMap<String, String>() {{
-                put("message", "Invalid username or password");
-            }});
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid username or password"));
         }
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
