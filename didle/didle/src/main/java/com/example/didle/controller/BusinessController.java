@@ -10,7 +10,9 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,17 +137,21 @@ public class BusinessController {
     }
 
     @PostMapping("/products")
-    public ResponseEntity<?> addProduct(@RequestBody ProductDTO productDTO, HttpSession session) {
+    public ResponseEntity<?> addProduct(@ModelAttribute ProductDTO productDTO,
+                                        @RequestParam("image") MultipartFile image,
+                                        HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
         try {
             Business business = businessService.getBusinessByUserId(userId);
-            ProductDTO addedProduct = productService.addProduct(productDTO, business.getId());
+            ProductDTO addedProduct = productService.addProduct(productDTO, image, business.getId());
             return ResponseEntity.ok(addedProduct);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Business not found");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to process image: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to add product: " + e.getMessage());
         }

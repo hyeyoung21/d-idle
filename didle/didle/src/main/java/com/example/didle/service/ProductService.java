@@ -10,16 +10,24 @@ import com.example.didle.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class ProductService {
+
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
@@ -102,15 +110,23 @@ public class ProductService {
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
         dto.setStockQuantity(product.getStockQuantity());
+        dto.setImageUrl(product.getImageUrl());  // 이미지 URL 설정
         if (product.getCategory() != null) {
             dto.setCategoryId(product.getCategory().getId());
             dto.setCategoryName(product.getCategory().getName());
         }
+        dto.setBusinessId(product.getBusinessId());
         return dto;
     }
 
 
-    public ProductDTO addProduct(ProductDTO productDTO, Long businessId) {
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    @Value("${server.servlet.context-path:}")
+    private String contextPath;
+
+    public ProductDTO addProduct(ProductDTO productDTO, MultipartFile image, Long businessId) throws IOException {
         Product product = new Product();
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
@@ -125,17 +141,19 @@ public class ProductService {
             product.setCategory(category);
         }
 
+        // 이미지 처리
+        if (image != null && !image.isEmpty()) {
+            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+            Files.copy(image.getInputStream(), filePath);
+            product.setImageUrl(contextPath + "/uploads/" + fileName);
+        }
+
         Product savedProduct = productRepository.save(product);
 
         return convertToDTO(savedProduct);
     }
 
-    public List<ProductDTO> getProductsByCategory(Long categoryId) {
-        List<Product> products = productRepository.findByCategoryId(categoryId);
-        return products.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
 
     public void deleteProduct(Long id) {
         // CartItem의 product_id를 null로 설정
