@@ -31,6 +31,38 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Search and Filter Styles */
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-container input[type="text"],
+        .filter-container select {
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 200px;
+        }
+
+        .filter-container button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 0.7rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-container button:hover {
+            background-color: #2980b9;
+        }
+
         #product-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -92,6 +124,17 @@
 
 <div class="container">
     <h2>All Products</h2>
+
+    <!-- Search Input and Category Filter -->
+    <div class="filter-container">
+        <input type="text" id="searchInput" placeholder="Search products...">
+        <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <!-- Categories will be loaded here -->
+        </select>
+        <button onclick="loadProducts()">Apply Filters</button>
+    </div>
+
     <form id="add-to-cart-form">
         <div id="product-list">
             <!-- Products will be listed here -->
@@ -101,6 +144,8 @@
 </div>
 
 <script th:inline="javascript">
+    let selectedCategoryId = ''; // Variable to store the selected category ID
+
     // Function to fetch and display products
     function loadProducts() {
         const userId = /*[[${session.userId}]]*/ null;
@@ -110,38 +155,43 @@
             return;
         }
 
+        const searchKeyword = document.getElementById('searchInput').value;
+        const categoryId = document.getElementById('categoryFilter').value;
+
+        // Construct the URL with search parameters
+        let url = `/api/products?search=${searchKeyword}&categoryId=${categoryId}`;
+
         // Fetch cart items for the user
         fetch(`/api/cart/user/${userId}`)
             .then(response => response.json())
             .then(cartItems => {
                 // Fetch all products
-                fetch('/api/products')
+                fetch(url)
                     .then(response => response.json())
                     .then(products => {
                         const productList = document.getElementById('product-list');
+                        productList.innerHTML = '';
                         products.forEach(product => {
                             const isInCart = cartItems.some(item => item.productId == product.id);
                             const productElement = document.createElement('div');
                             productElement.className = 'product';
+                            let productDetails = `
+                            <h3>${product.name}</h3>
+                            <p>${product.description}</p>
+                            <p>Price: $${product.price}</p>
+                            <p>Stock: ${product.stockQuantity}</p>
+                            <p>Category: ${product.categoryName || 'No Category'}</p>
+                        `;
 
                             if (isInCart) {
-                                productElement.innerHTML = `
-                                    <h3>${product.name}</h3>
-                                    <p>${product.description}</p>
-                                    <p>Price: $${product.price}</p>
-                                    <p>Stock: ${product.stockQuantity}</p>
-                                    <p>이미 장바구니에 있습니다.</p>
-                                `;
+                                productElement.innerHTML = productDetails + `<p>이미 장바구니에 있습니다.</p>`;
                             } else {
                                 productElement.innerHTML = `
-                                    <input type="checkbox" id="product-${product.id}" name="selectedProducts" value="${product.id}">
-                                    <label for="product-${product.id}">
-                                        <h3>${product.name}</h3>
-                                        <p>${product.description}</p>
-                                        <p>Price: $${product.price}</p>
-                                        <p>Stock: ${product.stockQuantity}</p>
-                                    </label>
-                                `;
+                                <input type="checkbox" id="product-${product.id}" name="selectedProducts" value="${product.id}">
+                                <label for="product-${product.id}">
+                                    ${productDetails}
+                                </label>
+                            `;
                             }
                             productList.appendChild(productElement);
                         });
@@ -149,6 +199,23 @@
                     .catch(error => console.error('Error fetching products:', error));
             })
             .catch(error => console.error('Error fetching cart items:', error));
+    }
+
+    function loadCategories() {
+        fetch('/api/categories')
+            .then(response => response.json())
+            .then(categories => {
+                const categoryFilter = document.getElementById('categoryFilter');
+                categoryFilter.innerHTML = '<option value="">All Categories</option>'; // Clear existing options and add default option
+
+                categories.content.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.text = category.name;
+                    categoryFilter.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error loading categories:', error));
     }
 
     function addSelectedToCart() {
@@ -175,9 +242,11 @@
             .catch(error => console.error('Error:', error));
     }
 
-
-    // Load products when the page loads
-    document.addEventListener('DOMContentLoaded', loadProducts);
+    // Load categories and products when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCategories(); // Load categories into the filter
+        loadProducts();     // Load products based on the filter
+    });
 </script>
 <script src="/logout.js"></script>
 </body>

@@ -1,14 +1,19 @@
 package com.example.didle.service;
 
+import com.example.didle.model.Category;
 import com.example.didle.model.Product;
 import com.example.didle.model.ProductDTO;
 import com.example.didle.repository.CartItemRepository;
+import com.example.didle.repository.CategoryRepository;
 import com.example.didle.repository.OrderItemRepository;
 import com.example.didle.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,11 +23,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
+    private final CategoryRepository categoryRepository;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository) {
+    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public Product createProduct(Product product) {
@@ -38,20 +45,15 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Product updateProduct(Product product) {
+    public Product updateProduct(Product product, Long categoryId) {
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+            product.setCategory(category);
+        }
         return productRepository.save(product);
     }
 
-    public void deleteProduct(Long id) {
-        // CartItem의 product_id를 null로 설정
-        cartItemRepository.nullifyProductId(id);
-
-        // OrderItem의 product_id를 null로 설정
-        orderItemRepository.nullifyProductId(id);
-
-        // Product 삭제
-        productRepository.deleteById(id);
-    }
 
     public Product getMostSoldProduct() {
         List<Object[]> result = orderItemRepository.findMostSoldProductId();
@@ -70,6 +72,29 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+
+    public List<ProductDTO> getAllProducts(String searchKeyword, Long categoryId) {
+        Specification<Product> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + searchKeyword.toLowerCase() + "%"));
+            }
+
+            if (categoryId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        List<Product> products = productRepository.findAll(spec);
+        return products.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
     private ProductDTO convertToDTO(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId(product.getId());
@@ -77,9 +102,13 @@ public class ProductService {
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
         dto.setStockQuantity(product.getStockQuantity());
-        // 필요한 다른 필드들도 설정
+        if (product.getCategory() != null) {
+            dto.setCategoryId(product.getCategory().getId());
+            dto.setCategoryName(product.getCategory().getName());
+        }
         return dto;
     }
+
 
     public ProductDTO addProduct(ProductDTO productDTO, Long businessId) {
         Product product = new Product();
@@ -89,9 +118,34 @@ public class ProductService {
         product.setStockQuantity(productDTO.getStockQuantity());
         product.setBusinessId(businessId);
 
+        // 카테고리 설정
+        if (productDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productDTO.getCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+            product.setCategory(category);
+        }
+
         Product savedProduct = productRepository.save(product);
 
         return convertToDTO(savedProduct);
+    }
+
+    public List<ProductDTO> getProductsByCategory(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        return products.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void deleteProduct(Long id) {
+        // CartItem의 product_id를 null로 설정
+        cartItemRepository.nullifyProductId(id);
+
+        // OrderItem의 product_id를 null로 설정
+        orderItemRepository.nullifyProductId(id);
+
+        // Product 삭제
+        productRepository.deleteById(id);
     }
 
 }

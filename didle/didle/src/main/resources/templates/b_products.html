@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,7 +54,8 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
             width: 80%;
             max-width: 600px;
-            position: relative; /* For close button positioning */
+            position: relative;
+            /* For close button positioning */
         }
 
         #add-product-form h2 {
@@ -95,6 +97,7 @@
             background-color: #27ae60;
         }
 
+        /* Product List Styles */
         #product-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -163,7 +166,8 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
             width: 80%;
             max-width: 600px;
-            position: relative; /* For close button positioning */
+            position: relative;
+            /* For close button positioning */
         }
 
         #edit-form h2 {
@@ -258,7 +262,7 @@
     <button id="open-add-product-form" onclick="openAddProductForm()">Add Product</button>
 
     <!-- Add Product Form -->
-    <div id="add-product-form-container">
+    <div id="add-product-form-container" style="display: none">
         <div class="form-content">
             <button type="button" class="close-button" onclick="closeAddProductForm()">&times;</button>
             <h2>Add Product</h2>
@@ -275,6 +279,11 @@
                 <label for="add-stockQuantity">Stock:</label>
                 <input type="number" id="add-stockQuantity" name="stockQuantity" required>
 
+                <label for="add-category">Category:</label>
+                <select id="add-category" name="category" required>
+                    <!-- 카테고리 목록이 여기에 동적으로 추가됩니다 -->
+                </select>
+
                 <button type="button" onclick="addProduct()">Add</button>
             </form>
         </div>
@@ -285,7 +294,7 @@
     </div>
 
     <!-- Edit Product Form (Hidden by default) -->
-    <div id="edit-form-container">
+    <div id="edit-form-container" style="display: none">
         <div class="form-content">
             <button type="button" class="close-button" onclick="closeEditForm()">&times;</button>
             <h2>Edit Product</h2>
@@ -295,7 +304,6 @@
 
                 <label for="edit-description">Description:</label>
                 <textarea id="edit-description" name="description" rows="3"></textarea>
-
                 <label for="edit-price">Price:</label>
                 <input type="number" id="edit-price" name="price" step="0.01">
 
@@ -331,6 +339,7 @@
                             <p>${product.description}</p>
                             <p>Price: $${product.price}</p>
                             <p>Stock: ${product.stockQuantity}</p>
+                            <p>Category: ${product.categoryName || 'No Category'}</p>
                             <button onclick="showEditForm(${product.id}, '${product.name}', '${product.description}', ${product.price}, ${product.stockQuantity})">Edit</button>
                             <button onclick="deleteProduct(${product.id})">Delete</button>
                         `;
@@ -420,12 +429,14 @@
         const description = document.getElementById('add-description').value;
         const price = document.getElementById('add-price').value;
         const stockQuantity = document.getElementById('add-stockQuantity').value;
+        const categoryId = document.getElementById('add-category').value;
 
         const newProduct = {
             name: name,
             description: description,
             price: price,
-            stockQuantity: stockQuantity
+            stockQuantity: stockQuantity,
+            categoryId: categoryId  // Include category ID
         };
 
         fetch('/api/business/products', {
@@ -459,6 +470,25 @@
     // Function to open the add product form
     function openAddProductForm() {
         document.getElementById('add-product-form-container').style.display = 'flex';
+        loadCategories();
+    }
+
+    // Function to load categories into the select element
+    function loadCategories() {
+        fetch('/api/categories')
+            .then(response => response.json())
+            .then(categories => {
+                const categorySelect = document.getElementById('add-category');
+                categorySelect.innerHTML = ''; // Clear existing options
+
+                categories.content.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.text = category.name;
+                    categorySelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error loading categories:', error));
     }
 
     // Function to close the add product form

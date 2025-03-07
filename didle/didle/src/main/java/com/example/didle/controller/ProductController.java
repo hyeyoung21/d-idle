@@ -37,13 +37,17 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
+    public ResponseEntity<List<ProductDTO>> getAllProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId) {
+        List<ProductDTO> products = productService.getAllProducts(search, categoryId);
         return ResponseEntity.ok(products);
     }
 
+
+
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product, HttpSession session) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -55,14 +59,37 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
-            product.setId(id);
-            product.setBusinessId(business.getId());
-            Product updatedProduct = productService.updateProduct(product);
-            return ResponseEntity.ok(updatedProduct);
+            Product existingProduct = productService.getProductById(id);
+            if (existingProduct == null || !existingProduct.getBusinessId().equals(business.getId())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            // Update existing product with new data
+            existingProduct.setName(productDTO.getName());
+            existingProduct.setDescription(productDTO.getDescription());
+            existingProduct.setPrice(productDTO.getPrice());
+            existingProduct.setStockQuantity(productDTO.getStockQuantity());
+
+            Product updatedProduct = productService.updateProduct(existingProduct, productDTO.getCategoryId());
+            return ResponseEntity.ok(convertToDTO(updatedProduct));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+    private ProductDTO convertToDTO(Product product) {
+        ProductDTO dto = new ProductDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setPrice(product.getPrice());
+        dto.setStockQuantity(product.getStockQuantity());
+        if (product.getCategory() != null) {
+            dto.setCategoryId(product.getCategory().getId());
+        }
+        return dto;
+    }
+
 
 
     @DeleteMapping("/{id}")
@@ -101,5 +128,6 @@ public class ProductController {
         List<ProductDTO> products = productService.getProductsByBusinessId(business.getId());
         return ResponseEntity.ok(products);
     }
+
 }
 
