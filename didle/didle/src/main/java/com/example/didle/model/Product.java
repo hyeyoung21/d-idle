@@ -36,6 +36,9 @@ public class Product {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
