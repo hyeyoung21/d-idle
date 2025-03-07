@@ -2,6 +2,8 @@ package com.example.didle.controller;
 
 import com.example.didle.model.Category;
 import com.example.didle.service.CategoryService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,27 +27,53 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
-        Category category = categoryService.getCategoryById(id);
-        return ResponseEntity.ok(category);
+        try {
+            Category category = categoryService.getCategoryById(id);
+            return ResponseEntity.ok(category);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
+    public ResponseEntity<Page<Category>> getAllCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy) {
+        Page<Category> categories = categoryService.getAllCategories(page, size, sortBy);
         return ResponseEntity.ok(categories);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
-        category.setId(id);
-        Category updatedCategory = categoryService.updateCategory(category);
-        return ResponseEntity.ok(updatedCategory);
+        try {
+            Category updatedCategory = categoryService.updateCategory(id, category);
+            return ResponseEntity.ok(updatedCategory);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        categoryService.deleteCategory(id);
-        return ResponseEntity.noContent().build();
+        try {
+            categoryService.deleteCategory(id);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Category>> searchCategories(@RequestParam String name) {
+        List<Category> categories = categoryService.searchCategoriesByName(name);
+        return ResponseEntity.ok(categories);
+    }
+
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> checkCategoryExists(@RequestParam String name) {
+        boolean exists = categoryService.categoryExistsByName(name);
+        return ResponseEntity.ok(exists);
     }
 }
-
