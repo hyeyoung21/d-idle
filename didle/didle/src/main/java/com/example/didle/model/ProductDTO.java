@@ -14,6 +14,6 @@ public class ProductDTO {
     private Long categoryId;
     private String categoryName;
     private Long businessId;
-
+    private String imageUrl;  // 추가된 필드
 
 }
