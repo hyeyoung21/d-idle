@@ -18,17 +18,20 @@ jobs:
           distribution: 'temurin'  # Eclipse Temurin (OpenJDK 17)
           java-version: '17'
 
-      - name: Gradle 실행 권한 부여
-        run: chmod +x gradlew
+      - name: gradlew 파일 위치 확인
+        run: find . -name "gradlew"  # gradlew 경로 확인
+
+      - name: Gradle 실행 권한 부여 (didle/didle 폴더)
+        run: chmod +x didle/didle/gradlew
 
       - name: 프로젝트 빌드 (Gradle)
-        run: ./gradlew build -x test  # 테스트 제외하고 빌드 (필요하면 -x test 제거)
+        run: cd didle/didle && ./gradlew build -x test  # 경로 이동 후 실행
 
       - name: 빌드된 JAR 파일 확인
-        run: ls -l build/libs/*.jar
+        run: ls -l didle/didle/build/libs/*.jar  # JAR 파일 확인
 
       - name: JAR 파일 이름 환경 변수 설정
-        run: echo "JAR_FILE=$(ls build/libs/*.jar | head -n 1)" >> $GITHUB_ENV
+        run: echo "JAR_FILE=$(ls didle/didle/build/libs/*.jar | head -n 1)" >> $GITHUB_ENV
 
   docker-build:
     runs-on: self-hosted  # Rocky Linux 9에서 실행
