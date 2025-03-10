@@ -31,7 +31,8 @@ jobs:
         run: ls -l didle/didle/build/libs/*.jar  # JAR 파일 확인
 
       - name: JAR 파일 이름 환경 변수 설정
-        run: echo "JAR_FILE=$(ls didle/didle/build/libs/*.jar | head -n 1)" >> $GITHUB_ENV
+        run: |
+          echo "JAR_FILE=$(ls didle/didle/build/libs/*.jar | head -n 1)" >> $GITHUB_ENV
 
   docker-build:
     runs-on: self-hosted  # Rocky Linux 9에서 실행
