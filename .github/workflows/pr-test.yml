@@ -45,5 +45,5 @@ jobs:
         run: docker --version  # Docker가 정상적으로 설치되어 있는지 확인
 
       - name: Docker 이미지 빌드 테스트
-        run: sudo docker build --build-arg JAR_FILE=${{ env.JAR_FILE }} -t my-app:test .
+        run: docker build --build-arg JAR_FILE=${{ env.JAR_FILE }} -t my-app:test .
 
