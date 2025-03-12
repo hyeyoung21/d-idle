@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Rocky Linux 9에서 실행
     permissions:
       id-token: write
       contents: read
