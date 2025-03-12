@@ -33,7 +33,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}  # GitHub 저장소 Secrets으로 관리
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to ECR
@@ -42,14 +42,12 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          # SHA 태그와 latest 태그 동시에 푸시
           docker build -t ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
           docker tag ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
           docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }} --all-tags
 
       - name: Update K8s Manifest
         run: |
-          # deployment.yml 파일의 이미지 태그를 GitHub SHA로 업데이트
           sed -i "s|image:.*|image: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}|" k8s/manifests/deployment.yml
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
