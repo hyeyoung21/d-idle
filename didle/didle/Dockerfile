@@ -1,11 +1,10 @@
-# didle/didle/Dockerfile
-
 # Build Stage
 FROM gradle:8.7-jdk17 AS build
 WORKDIR /app
-# 상위 디렉토리에서 파일 복사 (didle/ → /app)
-COPY ../build.gradle ../settings.gradle ./
-COPY ../src ./src
+
+# 프로젝트 루트(didle/didle)를 빌드 컨텍스트로 사용
+COPY build.gradle settings.gradle ./
+COPY src ./src
 RUN gradle clean build -x test
 
 # Runtime Stage
