@@ -14,8 +14,30 @@ spec:
       labels:
         app: spring-app
     spec:
+      imagePullSecrets:
+        - name: ecr-secret
       containers:
         - name: spring-app
-          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-app:latest
+          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-app:latest  # ✅ latest로 고정
+          imagePullPolicy: Always  # ⚠️ 새로운 이미지 강제 풀
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
