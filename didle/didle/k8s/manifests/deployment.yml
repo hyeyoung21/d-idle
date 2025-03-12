@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: spring-app
-          image: ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/hogeun-app:latest
+          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-app:latest
           ports:
             - containerPort: 8080
