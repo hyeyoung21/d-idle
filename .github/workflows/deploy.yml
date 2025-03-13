@@ -40,7 +40,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-session-name: GitHubActions-${{ github.run_id }}
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-actions-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
 
@@ -69,8 +69,7 @@ jobs:
         run: |
           aws eks update-kubeconfig \
             --region ${{ env.AWS_REGION }} \
-            --name ${{ env.EKS_CLUSTER }} \
-            --role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-actions-role
+            --name ${{ env.EKS_CLUSTER }}
 
       # 8. 쿠버네티스 배포
       - name: Deploy to EKS
