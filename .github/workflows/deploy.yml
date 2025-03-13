@@ -39,7 +39,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecr-deploy-role
+          role-session-name: GitHubActions-${{ github.run_id }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
 
@@ -54,6 +55,8 @@ jobs:
           cd didle/didle
           docker build -t ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }} .
           docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
+        env:
+          AWS_ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
 
       # 6. Kustomize를 통한 매니페스트 업데이트
       - name: Update Kustomize configuration
