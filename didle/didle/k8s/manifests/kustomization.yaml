@@ -1,7 +1,7 @@
 # didle/didle/k8s/manifests/kustomization.yaml
 resources:
-  - deployment.yaml
-  - service.yaml
+  - deployment.yml
+  - service.yml
 
 images:
   - name: hogeun-ecr-repo  # ECR_REPOSITORY 값과 일치

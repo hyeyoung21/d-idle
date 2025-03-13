@@ -17,7 +17,7 @@ spec:
       imagePullSecrets:
         - name: ecr-secret
       containers:
-        - name: spring-app
+        - name: didle-app
           image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-app:${IMAGE_TAG}
           imagePullPolicy: IfNotPresent
           ports:
