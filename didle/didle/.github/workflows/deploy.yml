@@ -3,6 +3,8 @@ name: Build and Deploy
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'didle/didle/**'  # ✅ Dockerfile이 있는 경로 감지
 
 env:
   AWS_REGION: us-east-2
