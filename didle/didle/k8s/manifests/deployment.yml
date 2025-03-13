@@ -5,7 +5,13 @@ metadata:
   labels:
     app: didle-app
 spec:
-  replicas: 2
+  progressDeadlineSeconds: 900  # 15분으로 확장
+  replicas: 1  # 프리티어에서는 1개로 제한
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1       # 최대 추가 생성 허용 Pod 수
+      maxUnavailable: 0  # 업데이트 중 다운 허용 Pod 수
   selector:
     matchLabels:
       app: didle-app
@@ -18,8 +24,8 @@ spec:
         - name: ecr-secret
       containers:
         - name: didle-app
-          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:latest # ✅ ECR 이름 수정
-          imagePullPolicy: IfNotPresent
+          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:latest
+          imagePullPolicy: IfNotPresent  # 프리티어 트래픽 절약
           ports:
             - containerPort: 8080
           env:
@@ -30,35 +36,30 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: jdbc-url
-            - name: S3_BUCKET
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: s3.bucket-name
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /
               port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 45  # 프리티어 성능 고려
+            periodSeconds: 15
+            timeoutSeconds: 5
           livenessProbe:
             httpGet:
-              path: /actuator/health
+              path: /
               port: 8080
-            initialDelaySeconds: 60
-            periodSeconds: 15
+            initialDelaySeconds: 90
+            periodSeconds: 20
             failureThreshold: 3
           resources:
-            requests:
-              memory: "768Mi"
+            requests:  # 최소 요청량 (프리티어 최적화)
+              memory: "256Mi"
+              cpu: "250m"
+            limits:    # 최대 한도 (과금 방지)
+              memory: "512Mi"
               cpu: "500m"
-            limits:
-              memory: "1536Mi"
-              cpu: "1000m"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
-            # readOnlyRootFilesystem: true  # ⚠️ 주석 처리
             allowPrivilegeEscalation: false
             capabilities:
               drop:
