@@ -1,43 +1,65 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spring-app
+  name: didle-app
   labels:
-    app: spring-app
+    app: didle-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: spring-app
+      app: didle-app
   template:
     metadata:
       labels:
-        app: spring-app
+        app: didle-app
     spec:
       imagePullSecrets:
         - name: ecr-secret
       containers:
         - name: spring-app
-          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-app:latest  # ✅ latest로 고정
-          imagePullPolicy: Always  # ⚠️ 새로운 이미지 강제 풀
+          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-app:${IMAGE_TAG}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: jdbc-url
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: s3.bucket-name
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "1024Mi"
+              memory: "768Mi"
               cpu: "500m"
+            limits:
+              memory: "1536Mi"
+              cpu: "1000m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
