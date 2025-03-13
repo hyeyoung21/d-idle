@@ -69,7 +69,7 @@ jobs:
         run: |
           aws eks update-kubeconfig \
             --region ${{ env.AWS_REGION }} \
-            --name ${{ env.EKS_CLUSTER }}
+            --name ${{ env.EKS_CLUSTER }} \
             --role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
 
       # 8. 쿠버네티스 배포
