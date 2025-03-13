@@ -58,7 +58,7 @@ jobs:
       - name: Update Kustomize configuration
         run: |
           cd didle/didle/k8s/manifests
-          kustomize edit set image ${{ env.ECR_REPOSITORY }}=${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
+          kustomize edit set image hogeun-ecr-repo=${{ steps.ecr-login.outputs.registry }}/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}
 
       # 7. EKS 클러스터 접근 설정
       - name: Configure EKS access

@@ -1,8 +1,0 @@
-# didle/didle/k8s/manifests/kustomization.yaml
-resources:
-  - deployment.yml
-  - service.yml
-
-images:
-  - name: hogeun-ecr-repo  # ECR_REPOSITORY 값과 일치
-    newTag: latest  # GitHub Actions에서 동적으로 업데이트
