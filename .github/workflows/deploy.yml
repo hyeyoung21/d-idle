@@ -77,5 +77,3 @@ jobs:
           cd didle/didle/k8s/manifests
           kustomize build . | kubectl apply -f - --validate=false
           kubectl rollout status deployment/${{ env.APP_NAME }} -n ${{ env.K8S_NAMESPACE }}
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
