@@ -1,4 +1,4 @@
--- 테스트 하는 중1
+-- 테스트 하는 중2
 CREATE TABLE users (
                        user_id SERIAL PRIMARY KEY,
                        username VARCHAR(50) UNIQUE NOT NULL,
