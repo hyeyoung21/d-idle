@@ -18,7 +18,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: didle-app
-          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-app:${IMAGE_TAG}
+          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:latest # ✅ ECR 이름 수정
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -58,7 +58,7 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
-            readOnlyRootFilesystem: true
+            # readOnlyRootFilesystem: true  # ⚠️ 주석 처리
             allowPrivilegeEscalation: false
             capabilities:
               drop:

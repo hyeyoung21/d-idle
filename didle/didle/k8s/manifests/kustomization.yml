@@ -1,0 +1,10 @@
+# didle/didle/k8s/manifests/kustomization.yml
+
+resources:
+  - deployment.yml
+  - service.yml
+
+images:
+  - name: hogeun-ecr-repo
+    newName: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo
+    newTag: latest  # GitHub Actions에서 동적 업데이트
