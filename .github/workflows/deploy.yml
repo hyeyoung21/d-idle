@@ -1,10 +1,21 @@
 name: Build and Deploy
 
+permissions:
+  deployments: write
+  contents: write
+  statuses: write
+  actions: write
+  checks: read
+
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
     paths:
-      - 'didle/didle/**'
+      - 'didle/didle/**'  # Dockerfile이 있는 경로 감지
 
 env:
   AWS_REGION: us-east-2
@@ -14,11 +25,13 @@ env:
   APP_NAME: didle-app
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      contents: write  # contents 권한 추가
+      packages: write
+      actions: read
 
     steps:
       # 1. 코드 체크아웃
@@ -52,28 +65,26 @@ jobs:
           docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG} .
           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG}
 
-      # 6. Kustomize를 통한 매니페스트 업데이트
-      - name: Update Kustomize configuration
+
+      # 5. Kustomize 설치
+      - name: Install Kustomize
+        run: |
+          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
+
+      # 6. deployment.yaml 파일 업데이트
+      - name: Update deployment.yaml
         run: |
           cd didle/didle/k8s/manifests
-          kustomize edit set image 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}
+          sed -i "s|image: .*|image: ${{ steps.ecr.outputs.registry }}/${{ env.APP_NAME }}:${{ steps.tag.outputs.TAG }}|" deployment.yaml
 
-      # 7. EKS 클러스터 접근 설정
-      - name: Configure EKS access
+      # 7. 변경 사항 GitHub에 커밋 및 푸시
+      - name: Commit and Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          aws eks update-kubeconfig \
-            --region ${{ env.AWS_REGION }} \
-            --name ${{ env.EKS_CLUSTER }}
-
-      - name: Replace image tag in deployment.yml
-        run: |
-          cd didle/didle/k8s/manifests
-          sed -i "s|PLACEHOLDER_IMAGE_TAG|116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}|g" deployment.yml
-
-      # 8. 매니페스트 파일에서 ${TAG} 치환 및 배포
-      - name: Deploy to EKS with envsubst
-        run: |
-          export TAG=${{ steps.tag.outputs.TAG }}
-          cd didle/didle/k8s/manifests
-          kustomize build . | envsubst | kubectl apply -f -
-          kubectl rollout status deployment/${{ env.APP_NAME }} -n ${{ env.K8S_NAMESPACE }}
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add didle/didle/k8s/manifests/deployment.yaml
+          git commit -m "Update deployment.yaml with new image tag" || echo "No changes to commit"
+          git push origin HEAD:main
