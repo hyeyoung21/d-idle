@@ -8,8 +8,8 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: hyeyoung-ecr-repo  # Terraform에서 정의한 ECR 이름과 일치
-  EKS_CLUSTER: hyeyoung-eks-cluster
+  ECR_REPOSITORY: hogeun-ecr-repo  # Terraform에서 정의한 ECR 이름과 일치
+  EKS_CLUSTER: hogeun-eks-cluster
   K8S_NAMESPACE: default
   APP_NAME: didle-app  # 실제 애플리케이션 이름으로 변경 필요
 
@@ -62,4 +62,19 @@ jobs:
       - name: Update Kustomize configuration
         run: |
           cd didle/didle/k8s/manifests
-          kustomize edit set image hyeyoung-ecr-repo=${{ steps.ecr-login.outputs.registry }}/hyeyoung-ecr-repo:${{ steps.tag.outputs.TAG }}
+          kustomize edit set image hogeun-ecr-repo=${{ steps.ecr-login.outputs.registry }}/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}
+
+      # 7. EKS 클러스터 접근 설정
+      - name: Configure EKS access
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER }}
+
+      # 8. 쿠버네티스 배포
+      - name: Deploy to EKS
+        run: |
+          cd didle/didle/k8s/manifests
+          kustomize build . | kubectl apply -f - --validate=false
+          kubectl rollout status deployment/${{ env.APP_NAME }} -n ${{ env.K8S_NAMESPACE }}
+
