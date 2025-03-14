@@ -67,7 +67,8 @@ jobs:
       - name: Update deployment.yml
         run: |
           cd didle/didle/k8s/manifests
-          sed -i "s|image: .*|image: ${secrets.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${{ steps.tag.outputs.TAG }}|" deployment.yml
+          export IMAGE=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
+          sed -i "s|image: .*|image: ${IMAGE}|" deployment.yml
 
       # 7. 변경 사항 GitHub에 커밋 및 푸시
       - name: Commit and Push changes
