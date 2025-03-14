@@ -8,8 +8,8 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr-repo  # Terraform에서 정의한 ECR 이름과 일치
-  EKS_CLUSTER: hogeun-eks-cluster
+  ECR_REPOSITORY: hyeyoung-ecr-repo  # Terraform에서 정의한 ECR 이름과 일치
+  EKS_CLUSTER: hyeyoung-eks-cluster
   K8S_NAMESPACE: default
   APP_NAME: didle-app  # 실제 애플리케이션 이름으로 변경 필요
 
@@ -57,5 +57,3 @@ jobs:
           docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
         env:
           AWS_ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-
-          
