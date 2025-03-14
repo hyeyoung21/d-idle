@@ -24,7 +24,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: didle-app
-          image: /didle-app:20250314-043b554
+          image: /didle-app:20250314-cfd40a7
           imagePullPolicy: IfNotPresent  # 프리티어 트래픽 절약
           ports:
             - containerPort: 8080
