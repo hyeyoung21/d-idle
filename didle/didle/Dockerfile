@@ -1,5 +1,5 @@
 # didle/didle/Dockerfile
-#TEST
+#TEST2
 # Build Stage
 FROM gradle:8.7-jdk17 AS build
 WORKDIR /app
