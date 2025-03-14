@@ -71,7 +71,7 @@ jobs:
           sudo mv kustomize /usr/local/bin/
           cd didle/didle/k8s/manifests
           kustomize edit set image 116981805975.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:${{ steps.tag.outputs.TAG }}
-		  
+
       # 7. 변경 사항 GitHub에 커밋 및 푸시
       - name: Commit and Push changes
         env:
