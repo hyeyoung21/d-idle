@@ -76,7 +76,7 @@ jobs:
       - name: Update deployment.yaml
         run: |
           cd didle/didle/k8s/manifests
-          sed -i "s|image: .*|image: ${{ steps.ecr.outputs.registry }}/${{ env.APP_NAME }}:${{ steps.tag.outputs.TAG }}|" deployment.yaml
+          sed -i "s|image: .*|image: ${{ steps.ecr.outputs.registry }}/${{ env.APP_NAME }}:${{ steps.tag.outputs.TAG }}|" deployment.yml
 
       # 7. 변경 사항 GitHub에 커밋 및 푸시
       - name: Commit and Push changes
