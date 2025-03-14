@@ -52,7 +52,20 @@ jobs:
           docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG} .
           docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG}
 
-      # 6. 매니페스트 파일에서 ${TAG} 치환 및 배포
+      # 6. Kustomize를 통한 매니페스트 업데이트
+      - name: Update Kustomize configuration
+        run: |
+          cd didle/didle/k8s/manifests
+          kustomize edit set image 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}
+
+      # 7. EKS 클러스터 접근 설정
+      - name: Configure EKS access
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER }}
+
+      # 8. 매니페스트 파일에서 ${TAG} 치환 및 배포
       - name: Deploy to EKS with envsubst
         run: |
           export TAG=${{ steps.tag.outputs.TAG }}
