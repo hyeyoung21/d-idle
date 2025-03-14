@@ -1,4 +1,4 @@
--- 3/14 argo 테스트6
+-- 3/14 argo 테스트7
 CREATE TABLE users (
                        user_id SERIAL PRIMARY KEY,
                        username VARCHAR(50) UNIQUE NOT NULL,
