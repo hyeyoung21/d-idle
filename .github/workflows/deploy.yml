@@ -1,15 +1,12 @@
-#test1
 name: Build and Deploy
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'didle/didle/**'  # ✅ Dockerfile이 있는 경로 감지
+      - 'didle/didle/**'  # Dockerfile이 있는 경로 감지
 
 env:
-  AWS_REGION: us-east-2
-  ECR_REPOSITORY: hyeyoung-ecr-repo  # Terraform에서 정의한 ECR 이름과 일치
   APP_NAME: didle-app  # 실제 애플리케이션 이름으로 변경 필요
 
 jobs:
@@ -34,17 +31,14 @@ jobs:
         run: |
           echo "TAG=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      # 3. 도커 이미지 빌드 및 푸시
-      - name: Build and Push Docker Image
+      # 3. Docker 이미지 빌드 (푸시 X)
+      - name: Build Docker Image
         run: |
           cd didle/didle
-          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }} .
-          docker push ${{ secrets.AWS_ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
+          docker build -t ${APP_NAME}:${{ steps.tag.outputs.TAG }} .
 
       # 4. Kustomize를 통한 매니페스트 업데이트
       - name: Update Kustomize configuration
         run: |
           cd didle/didle/k8s/manifests
-          kustomize edit set image hyeyoung-ecr-repo=${{ secrets.AWS_ECR_REGISTRY }}/hyeyoung-ecr-repo:${{ steps.tag.outputs.TAG }}
-
-      # 배포 관련 AWS 권한 설정 및 EKS 접근 설정은 ArgoCD가 처리하므로 이 부분은 제거되었습니다.
+          kustomize edit set image ${APP_NAME}:${{ steps.tag.outputs.TAG }}
