@@ -59,10 +59,9 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           cd didle/didle
-          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
           export TAG=${{ steps.tag.outputs.TAG }}
-          docker build -t ${secrets.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:${TAG} .
-          docker push ${secrets.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:${TAG}
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${TAG} .
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${TAG}
       
       # 6. deployment.yaml 파일 업데이트
       - name: Update deployment.yml
