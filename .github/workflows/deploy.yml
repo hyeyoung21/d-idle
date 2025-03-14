@@ -67,6 +67,7 @@ jobs:
 
       - name: Replace image tag in deployment.yml
         run: |
+          cd didle/didle
           sed -i "s|PLACEHOLDER_IMAGE_TAG|116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}|g" deployment.yml
 
       # 8. 매니페스트 파일에서 ${TAG} 치환 및 배포
