@@ -43,51 +43,6 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
-name: Build and Deploy
-
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'didle/didle/**'  # ✅ Dockerfile이 있는 경로 감지
-
-env:
-  AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr-repo  # Terraform에서 정의한 ECR 이름과 일치
-  EKS_CLUSTER: hogeun-eks-cluster
-  K8S_NAMESPACE: default
-  APP_NAME: didle-app  # 실제 애플리케이션 이름으로 변경 필요
-
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      packages: write
-      actions: read
-
-    steps:
-      # 1. 코드 체크아웃
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # git 히스토리 전체 가져오기
-
-      # 2. 동적 이미지 태그 생성
-      - name: Generate image tag
-        id: tag
-        run: |
-          echo "TAG=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      # 3. AWS 권한 설정
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-session-name: GitHubActions-${{ github.run_id }}
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
-          aws-region: ${{ env.AWS_REGION }}
-          audience: sts.amazonaws.com
 
       # 4. ECR 로그인
       - name: Login to ECR
