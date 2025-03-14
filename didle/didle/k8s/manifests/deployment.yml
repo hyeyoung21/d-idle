@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: didle-app
-          image: .dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:20250314-6ff8056
+          image: 116981805975.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:20250314-c0becd4
           ports:
             - containerPort: 8080
           env:
