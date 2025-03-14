@@ -67,6 +67,8 @@ jobs:
       # 6. deployment.yaml 파일 업데이트
       - name: Update deployment.yml
         run: |
+          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
+          sudo mv kustomize /usr/local/bin/
           cd didle/didle/k8s/manifests
           kustomize edit set image 116981805975.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:${{ steps.tag.outputs.TAG }}
 		  
