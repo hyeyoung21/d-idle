@@ -57,3 +57,9 @@ jobs:
           docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
         env:
           AWS_ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+		  
+      # 6. Kustomize를 통한 매니페스트 업데이트
+      - name: Update Kustomize configuration
+        run: |
+          cd didle/didle/k8s/manifests
+          kustomize edit set image hyeyoung-ecr-repo=${{ steps.ecr-login.outputs.registry }}/hyeyoung-ecr-repo:${{ steps.tag.outputs.TAG }}
