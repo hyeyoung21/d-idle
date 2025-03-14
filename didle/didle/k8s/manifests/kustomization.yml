@@ -5,4 +5,5 @@ resources:
 
 images:
   - name: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo
-    newTag: ${TAG} # 동적 태그 반영
+    newTag: ${TAG} # 동적 태그 반영 (envsubst로 치환)
+
