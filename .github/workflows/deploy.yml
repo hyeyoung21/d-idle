@@ -46,9 +46,9 @@ jobs:
       # 5. 도커 이미지 빌드 및 푸시
       - name: Build and Push Docker Image
         run: |
-	  cd didle/didle
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }} .
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}
+          cd didle/didle
+          docker build -t ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }} .
+          docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
 
       # 6. 매니페스트 파일에서 ${TAG} 치환 및 배포
       - name: Deploy to EKS with envsubst
