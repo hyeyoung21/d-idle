@@ -36,6 +36,11 @@ spec:
                 secretKeyRef:
                   name: db-secrets
                   key: jdbc-url
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-password
           readinessProbe:
             httpGet:
               path: /
