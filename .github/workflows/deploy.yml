@@ -46,6 +46,7 @@ jobs:
       # 5. 도커 이미지 빌드 및 푸시
       - name: Build and Push Docker Image
         run: |
+          cd didle/didle
           export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
           export TAG=${{ steps.tag.outputs.TAG }}
           docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG} .
