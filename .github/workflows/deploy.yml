@@ -18,9 +18,9 @@ on:
       - 'didle/didle/**'  # Dockerfile이 있는 경로 감지
 
 env:
-  AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr-repo
-  EKS_CLUSTER: hogeun-eks-cluster
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: hyeyoung-ecr-repo
+  EKS_CLUSTER: hyeyoung-eks-cluster
   K8S_NAMESPACE: default
   APP_NAME: didle-app
 
@@ -43,7 +43,6 @@ jobs:
         id: tag
         run: |
           echo "TAG=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       # 3. AWS 권한 설정
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,22 +61,15 @@ jobs:
           cd didle/didle
           export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
           export TAG=${{ steps.tag.outputs.TAG }}
-          docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG} .
-          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${TAG}
-
-
-      # 5. Kustomize 설치
-      - name: Install Kustomize
-        run: |
-          curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash
-          sudo mv kustomize /usr/local/bin/
-
+          docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:${TAG} .
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo:${TAG}
+      
       # 6. deployment.yaml 파일 업데이트
-      - name: Update deployment.yaml
+      - name: Update deployment.yml
         run: |
           cd didle/didle/k8s/manifests
-          sed -i "s|image: .*|image: ${{ steps.ecr.outputs.registry }}/${{ env.APP_NAME }}:${{ steps.tag.outputs.TAG }}|" deployment.yaml
-
+          kustomize edit set image 116981805975.dkr.ecr.us-east-2.amazonaws.com/hyeyoung-ecr-repo:${{ steps.tag.outputs.TAG }}
+		  
       # 7. 변경 사항 GitHub에 커밋 및 푸시
       - name: Commit and Push changes
         env:
@@ -85,6 +77,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add didle/didle/k8s/manifests/deployment.yaml
-          git commit -m "Update deployment.yaml with new image tag" || echo "No changes to commit"
+          git add didle/didle/k8s/manifests/deployment.yml
+          git commit -m "Update deployment.yml with new image tag" || echo "No changes to commit"
           git push origin HEAD:main
