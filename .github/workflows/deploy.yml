@@ -65,6 +65,10 @@ jobs:
             --region ${{ env.AWS_REGION }} \
             --name ${{ env.EKS_CLUSTER }}
 
+      - name: Replace image tag in deployment.yml
+        run: |
+          sed -i "s|PLACEHOLDER_IMAGE_TAG|116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:${{ steps.tag.outputs.TAG }}|g" deployment.yml
+
       # 8. 매니페스트 파일에서 ${TAG} 치환 및 배포
       - name: Deploy to EKS with envsubst
         run: |
