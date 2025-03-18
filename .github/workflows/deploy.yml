@@ -1,90 +1,33 @@
-name: Build and Deploy
-
-# git push를 위해 권한 write 권한 허용
-permissions:
-  deployments: write
-  contents: write
-  statuses: write
-  actions: write
-  checks: read
+name: Deploy
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'didle/didle/**'  #이 경로 밑에 있는 파일이 수정되면 workflow 실행
-  pull_request:
-    branches:
-      - main # main 파일에 있는 deployment.yml 파일이 수정됨
+  workflow_run:
+    workflows: ["Build and Push"]
+    types:
+      - completed
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr-repo
   EKS_CLUSTER: hogeun-eks-cluster
-  K8S_NAMESPACE: default
-  APP_NAME: didle-app
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write 
-      packages: write
-      actions: read
-
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      # 1. 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 동적 이미지 태그 생성
-      - name: Generate image tag
-        id: tag
-        run: |
-          echo "TAG=$(date +%Y%m%d)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          
-      # 3. AWS 권한 설정
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-session-name: GitHubActions-${{ github.run_id }}
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
-      # 4. ECR 로그인
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Update kubeconfig
+        run: aws eks get-token --cluster-name ${{ env.EKS_CLUSTER }} | kubectl apply -f -
 
-      - name: Print image tag and ECR URI
+      - name: Deploy to ArgoCD
         run: |
-          echo "Image Tag: ${{ steps.tag.outputs.TAG }}"
-          echo "ECR URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}"
-
-
-      # 5. 도커 이미지 빌드 및 푸시
-      - name: Build and Push Docker Image
-        run: |
-          cd didle/didle
-          export TAG=${{ steps.tag.outputs.TAG }}
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${TAG} .
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${TAG}
-      
-      # 6. deployment.yaml 파일 업데이트
-      - name: Update deployment.yml
-        run: |
-          cd didle/didle/k8s/manifests
-          export IMAGE=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.TAG }}
-          sed -i "s|image: .*|image: ${IMAGE}|" deployment.yml
-
-      # 7. 변경 사항 GitHub에 커밋 및 푸시
-      - name: Commit and Push changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add didle/didle/k8s/manifests/deployment.yml
-          git commit -m "Update deployment.yml with new image tag" || echo "No changes to commit"
-          git push origin HEAD:main
+          argocd app set didle-app --helm-set image.tag=${{ github.sha }}
+          argocd app sync didle-app --prune
