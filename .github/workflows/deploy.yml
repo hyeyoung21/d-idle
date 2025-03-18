@@ -19,7 +19,7 @@ on:
       - main # main 파일에 있는 deployment.yml 파일이 수정됨
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: us-east-2
   ECR_REPOSITORY: hogeun-ecr-repo
   EKS_CLUSTER: hogeun-eks-cluster
   K8S_NAMESPACE: default
