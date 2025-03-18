@@ -24,7 +24,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: didle-app
-          image: {{ECR_URI}}:{{TAG}}  # 👈 이 부분 수정
+          image: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo:20250318-761db9a
           imagePullPolicy: IfNotPresent  # 프리티어 트래픽 절약
           ports:
             - containerPort: 8080
