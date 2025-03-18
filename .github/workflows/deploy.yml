@@ -20,8 +20,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: hyeyoung-ecr-repo
-  EKS_CLUSTER: hyeyoung-eks-cluster
+  ECR_REPOSITORY: hogeun-ecr-repo
+  EKS_CLUSTER: hogeun-eks-cluster
   K8S_NAMESPACE: default
   APP_NAME: didle-app
 
