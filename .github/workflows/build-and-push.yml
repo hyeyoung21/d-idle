@@ -8,8 +8,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'didle/**'
 
 env:
   AWS_REGION: us-east-2
@@ -69,3 +67,4 @@ jobs:
           git add $HELM_CHART_PATH/values.yaml
           git commit -m "Update image tag" || exit 0
           git push
+
