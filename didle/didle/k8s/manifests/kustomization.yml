@@ -1,9 +1,0 @@
-# kustomization.yml
-resources:
-  - deployment.yml
-  - service.yml
-
-images:
-  - name: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo
-    newTag: PLACEHOLDER_TAG
-
