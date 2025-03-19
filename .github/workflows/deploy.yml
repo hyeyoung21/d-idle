@@ -55,5 +55,5 @@ jobs:
 
       - name: Deploy to ArgoCD
         run: |
-          argocd app set didle-app --helm-set image.tag=${{ github.sha }} --server ${{ env.ARGOCD_SERVER }}
+          argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
