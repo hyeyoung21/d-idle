@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: didle
+  name: didle-app
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/rhg4656/d-idle.git
     path: helm-charts/didle
-    targetRevision: HEAD
+    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: default

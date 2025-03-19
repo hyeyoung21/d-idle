@@ -1,8 +1,12 @@
 name: Build and Push
 
 permissions:
-  contents: read
   id-token: write
+  deployments: write
+  contents: write
+  statuses: write
+  actions: write
+  checks: read
 
 on:
   push:
@@ -16,10 +20,17 @@ env:
 
 jobs:
   build-and-push:
+    outputs:
+      image_tag: ${{ github.sha }}
+
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      deployments: write
+      contents: write
+      statuses: write
+      actions: write
+      checks: read
 
     steps:
       - name: Checkout code
@@ -54,17 +65,20 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG didle/didle
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Update Helm chart
         run: |
-          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/values.yaml
-          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/values.yaml
+          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/Values.yaml
+          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/Values.yaml
 
       - name: Commit and push if changed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/values.yaml
+          git add $HELM_CHART_PATH/Values.yaml
           git commit -m "Update image tag" || exit 0
           git push
 
