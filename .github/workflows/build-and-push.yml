@@ -8,8 +8,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'didle/**'
 
 env:
   AWS_REGION: us-east-2
