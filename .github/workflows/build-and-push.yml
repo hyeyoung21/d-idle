@@ -64,7 +64,7 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/values.yaml
+          git add $HELM_CHART_PATH/values.yml
           git commit -m "Update image tag" || exit 0
           git push
 
