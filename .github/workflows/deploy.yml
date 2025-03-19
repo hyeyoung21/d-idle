@@ -14,6 +14,9 @@ on:
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: hogeun-eks-cluster
+  ARGOCD_SERVER: a124efb6bb49048c3bffd8b639e8704a-607029866.us-east-2.elb.amazonaws.com
+  ARGOCD_USERNAME: admin
+  ARGOCD_PASSWORD: L3ssZB7sBfr1uZjT
 
 jobs:
   deploy:
@@ -46,7 +49,11 @@ jobs:
           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
           rm argocd-linux-amd64
 
+      - name: Login to ArgoCD
+        run: |
+          argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
+
       - name: Deploy to ArgoCD
         run: |
-          argocd app set didle-app --helm-set image.tag=${{ github.sha }}
-          argocd app sync didle-app --prune
+          argocd app set didle-app --helm-set image.tag=${{ github.sha }} --server ${{ env.ARGOCD_SERVER }}
+          argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
