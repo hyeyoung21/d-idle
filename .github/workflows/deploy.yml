@@ -55,5 +55,6 @@ jobs:
 
       - name: Deploy to ArgoCD
         run: |
+	  IMAGE_TAG=$(cat image_tag.txt)
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
