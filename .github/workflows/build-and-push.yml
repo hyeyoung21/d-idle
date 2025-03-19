@@ -23,7 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      deployments: write
+      contents: write
+      statuses: write
+      actions: write
+      checks: read
 
     steps:
       - name: Checkout code
