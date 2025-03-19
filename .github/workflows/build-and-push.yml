@@ -32,12 +32,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
-        run: |
-          cd didle/didle
-          chmod +x ./gradlew
-          ./gradlew build
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -47,6 +41,12 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build with Gradle
+        run: |
+          cd didle/didle
+          chmod +x ./gradlew
+          ./gradlew build
 
       - name: Build, tag, and push image to Amazon ECR
         env:
@@ -68,3 +68,4 @@ jobs:
           git add $HELM_CHART_PATH/values.yaml
           git commit -m "Update image tag" || exit 0
           git push
+
