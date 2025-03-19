@@ -1,4 +1,4 @@
--- 3/19 테스트
+-- 3/19 테스트123
 CREATE TABLE users (
                        user_id SERIAL PRIMARY KEY,
                        username VARCHAR(50) UNIQUE NOT NULL,
