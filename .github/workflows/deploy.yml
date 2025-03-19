@@ -5,6 +5,7 @@ permissions:
   deployments: write
   contents: write
 
+
 on:
   workflow_run:
     workflows: ["Build and Push"]
@@ -28,12 +29,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Install kubectl
-  	run: |
-    	  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    	  chmod +x kubectl
-    	  sudo mv kubectl /usr/local/bin/
 
       - name: Update kubeconfig
         run: aws eks get-token --cluster-name ${{ env.EKS_CLUSTER }} | kubectl apply -f -
