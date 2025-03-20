@@ -55,6 +55,6 @@ jobs:
 
       - name: Deploy to ArgoCD
         run: |
-          echo "IMAGE_TAG=${{ github.event.workflow_run.outputs.image_tag }}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$(cat image_tag.txt)" >> $GITHUB_ENV
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
