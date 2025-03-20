@@ -23,6 +23,7 @@ env:
   ARGOCD_SERVER: aaa03ced1a2b24df19c885b53fb7115b-917213169.us-east-1.elb.amazonaws.com
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: OW2mdRJtQwZlby0N
+  HELM_CHART_PATH: ./helm-charts/didle  # Values.yaml 파일 경로
 
 jobs:
   deploy:
@@ -32,11 +33,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download artifact (image_tag.txt)
-        uses: actions/download-artifact@v4
-        with:
-          name: image-tag
-          path: .
+      - name: Extract image tag from Values.yaml
+        id: extract-image-tag
+        run: |
+          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/Values.yaml | awk '{print $2}')
+          echo "Extracted IMAGE_TAG: $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -65,9 +67,18 @@ jobs:
         run: |
           argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
 
-      - name: Deploy to ArgoCD
+      - name: Create ArgoCD Application (if not exists)
         run: |
-          echo "IMAGE_TAG=$(cat image_tag.txt)" >> $GITHUB_ENV
-          echo "📌 Debug: IMAGE_TAG 값 -> $IMAGE_TAG"
+          if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
+            argocd app create didle-app \
+              --repo https://github.com/hyeyoung21/d-idle.git \
+              --path ./helm-charts/didle \
+              --dest-server https://kubernetes.default.svc \
+              --dest-namespace default \
+              --server ${{ env.ARGOCD_SERVER }}
+          fi
+
+      - name: Set image tag and sync ArgoCD application
+        run: |
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}

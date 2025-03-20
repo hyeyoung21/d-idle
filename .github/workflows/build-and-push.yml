@@ -14,13 +14,6 @@ on:
     branches:
       - main
 
-  workflow_call:
-    outputs:
-      image_tag:
-        description: "Built image tag"
-        value: ${{ jobs.build-and-push.outputs.image_tag }}
-
-
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: hyeyoung-ecr-repo
@@ -28,8 +21,6 @@ env:
 
 jobs:
   build-and-push:
-    outputs:
-      image_tag: ${{ github.sha }}
 
     runs-on: ubuntu-latest
     permissions:
@@ -77,13 +68,6 @@ jobs:
       - name: Save image tag as artifact
         run: echo "${{ github.sha }}" > image_tag.txt
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-tag
-          path: image_tag.txt
-
-
       - name: Update Helm chart
         run: |
           sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/Values.yaml
@@ -98,4 +82,3 @@ jobs:
           git add $HELM_CHART_PATH/Values.yaml
           git commit -m "Update image tag" || exit 0
           git push
-
