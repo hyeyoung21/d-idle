@@ -70,5 +70,14 @@ jobs:
       - name: Deploy to ArgoCD
         run: |
           echo "📌 Debug: IMAGE_TAG 값 -> $IMAGE_TAG"
+          - name: Create ArgoCD Application (if not exists)
+           if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
+           argocd app create didle-app \
+            --repo https://github.com/hyeyoung21/d-idle.git \
+            --path ./helm-charts/didle \
+             --dest-server https://kubernetes.default.svc \
+             --dest-namespace default \
+             --server ${{ env.ARGOCD_SERVER }}
+          fi
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
