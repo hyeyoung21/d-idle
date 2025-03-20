@@ -72,7 +72,16 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG didle/didle
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "${{ github.sha }}" > image_tag.txt
+
+      - name: Save image tag as artifact
+        run: echo "${{ github.sha }}" > image_tag.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: image-tag
+          path: image_tag.txt
+
 
       - name: Update Helm chart
         run: |
