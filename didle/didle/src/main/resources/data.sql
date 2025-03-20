@@ -1,4 +1,5 @@
-INSERT INTO categories (name, description) VALUES
+INSERT INTO categories (name, description)
+VALUES
     ('전자제품', '컴퓨터, 스마트폰, TV 등의 전자기기'),
     ('의류', '남성, 여성, 아동을 위한 모든 종류의 의류'),
     ('식품', '신선식품, 가공식품, 음료 등'),
@@ -8,7 +9,9 @@ INSERT INTO categories (name, description) VALUES
     ('뷰티/화장품', '스킨케어, 메이크업, 향수 등'),
     ('주방용품', '조리도구, 식기, 주방가전 등'),
     ('완구/취미', '장난감, 보드게임, 취미용품 등'),
-    ('생활용품', '청소용품, 욕실용품, 수납용품 등');
+    ('생활용품', '청소용품, 욕실용품, 수납용품 등')
+ON CONFLICT (name) DO NOTHING;
 
+-- users 테이블에 데이터 삽입
 INSERT INTO users (address, email, full_name, password_hash, phone, user_type, username, business_id)
 VALUES ('관리자', '관리자@관리자', '관리자', 'rhksflwk', '000-0000-0000', 'ADMIN', '관리자', NULL);
