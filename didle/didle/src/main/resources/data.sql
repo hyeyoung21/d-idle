@@ -10,5 +10,5 @@ INSERT INTO categories (name, description) VALUES
     ('완구/취미', '장난감, 보드게임, 취미용품 등'),
     ('생활용품', '청소용품, 욕실용품, 수납용품 등');
 
-INSERT INTO users (user_id, address, email, full_name, password_hash, phone, user_type, username, business_id)
-VALUES (1, '관리자', '관리자@관리자', '관리자', 'rhksflwk', '000-0000-0000', 'ADMIN', '관리자', NULL);
+INSERT INTO users (address, email, full_name, password_hash, phone, user_type, username, business_id)
+VALUES ('관리자', '관리자@관리자', '관리자', 'rhksflwk', '000-0000-0000', 'ADMIN', '관리자', NULL);
