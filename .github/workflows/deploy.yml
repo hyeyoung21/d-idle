@@ -11,6 +11,13 @@ on:
     types:
       - completed
 
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+
+
 env:
   AWS_REGION: us-east-1
   EKS_CLUSTER: hyeyoung-eks-cluster

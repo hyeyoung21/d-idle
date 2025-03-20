@@ -13,6 +13,13 @@ on:
     branches:
       - main
 
+  workflow_call:
+    outputs:
+      image_tag:
+        description: "Built image tag"
+        value: ${{ jobs.build-and-push.outputs.image_tag }}
+
+
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: hyeyoung-ecr-repo
