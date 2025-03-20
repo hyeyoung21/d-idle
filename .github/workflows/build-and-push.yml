@@ -14,8 +14,8 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr-repo
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: hyeyoung-ecr-repo
   HELM_CHART_PATH: ./helm-charts/didle
 
 jobs:
