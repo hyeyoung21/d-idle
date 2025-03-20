@@ -20,9 +20,9 @@ on:
 env:
   AWS_REGION: us-east-1
   EKS_CLUSTER: hyeyoung-eks-cluster
-  ARGOCD_SERVER: aaa03ced1a2b24df19c885b53fb7115b-917213169.us-east-1.elb.amazonaws.com
+  ARGOCD_SERVER: a8d0a61136e424f4bb17d986b70da5f4-1482899556.us-east-1.elb.amazonaws.com
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: OW2mdRJtQwZlby0N
+  ARGOCD_PASSWORD: enjcoR4gYg6VhAH1
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
 
 jobs:
