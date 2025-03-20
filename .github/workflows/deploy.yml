@@ -12,11 +12,11 @@ on:
       - completed
 
 env:
-  AWS_REGION: us-east-2
-  EKS_CLUSTER: hogeun-eks-cluster
-  ARGOCD_SERVER: a124efb6bb49048c3bffd8b639e8704a-607029866.us-east-2.elb.amazonaws.com
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: hyeyoung-eks-cluster
+  ARGOCD_SERVER: aaa03ced1a2b24df19c885b53fb7115b-917213169.us-east-1.elb.amazonaws.com
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: T-il-ivQaexgjykQ
+  ARGOCD_PASSWORD: OW2mdRJtQwZlby0N
 
 jobs:
   deploy:
