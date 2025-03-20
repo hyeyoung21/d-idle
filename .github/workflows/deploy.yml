@@ -56,5 +56,6 @@ jobs:
       - name: Deploy to ArgoCD
         run: |
           echo "IMAGE_TAG=$(cat image_tag.txt)" >> $GITHUB_ENV
+          echo "📌 Debug: IMAGE_TAG 값 -> $IMAGE_TAG"
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
