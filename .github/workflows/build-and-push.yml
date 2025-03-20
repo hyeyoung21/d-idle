@@ -77,7 +77,7 @@ jobs:
         run: echo "${{ github.sha }}" > image_tag.txt
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: image-tag
           path: image_tag.txt
