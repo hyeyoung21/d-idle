@@ -78,7 +78,14 @@ jobs:
               --server ${{ env.ARGOCD_SERVER }}
           fi
 
+      - name: Verify values.yaml exists
+        run: |
+          if [ ! -f "${{ env.HELM_CHART_PATH }}/values.yaml" ]; then
+            echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
+            exit 1
+          fi
+    
       - name: Set image tag and sync ArgoCD application
         run: |
-          argocd app set didle-app --helm-set-file values=${{ env.HELM_CHART_PATH }}/values.yaml --server $ARGOCD_SERVER
+          argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
