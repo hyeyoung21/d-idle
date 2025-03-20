@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: 116981805975.dkr.ecr.us-east-1.amazonaws.com/hyeyoung-ecr-repo
-  tag: 8f120fca0650bc1422cdc866fd9c89d57842a252
+  tag: b8f1bb7919cf0fcf6370a6ec8ac1beb56145ab90
 service:
   type: ClusterIP
   port: 8080
