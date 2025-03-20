@@ -20,10 +20,10 @@ on:
 env:
   AWS_REGION: us-east-1
   EKS_CLUSTER: hyeyoung-eks-cluster
-  ARGOCD_SERVER: aaa03ced1a2b24df19c885b53fb7115b-917213169.us-east-1.elb.amazonaws.com
+  ARGOCD_SERVER: a8d0a61136e424f4bb17d986b70da5f4-1482899556.us-east-1.elb.amazonaws.com
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: OW2mdRJtQwZlby0N
-  HELM_CHART_PATH: ./helm-charts/didle  # Values.yaml 파일 경로
+  ARGOCD_PASSWORD: enjcoR4gYg6VhAH1
+  HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
 
 jobs:
   deploy:
@@ -33,10 +33,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract image tag from Values.yaml
+      - name: Extract image tag from values.yaml
         id: extract-image-tag
         run: |
-          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/Values.yaml | awk '{print $2}')
+          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
           echo "Extracted IMAGE_TAG: $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
@@ -78,6 +78,13 @@ jobs:
               --server ${{ env.ARGOCD_SERVER }}
           fi
 
+      - name: Verify values.yaml exists
+        run: |
+          if [ ! -f "${{ env.HELM_CHART_PATH }}/values.yaml" ]; then
+            echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
+            exit 1
+          fi
+    
       - name: Set image tag and sync ArgoCD application
         run: |
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}

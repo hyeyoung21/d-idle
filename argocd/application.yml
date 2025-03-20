@@ -6,9 +6,11 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/rhg4656/d-idle.git
+    repoURL: https://github.com/hyeyoung21/d-idle.git
     path: helm-charts/didle
-    targetRevision: main
+    helm:
+      valueFiles:
+        - values.yaml  # 정확한 파일 명시
   destination:
     server: https://kubernetes.default.svc
     namespace: default
