@@ -70,8 +70,8 @@ jobs:
 
       - name: Update Helm chart
         run: |
-          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/Values.yaml
-          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/Values.yaml
+          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/values.yaml
+          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/values.yaml
 
       - name: Commit and push if changed
         env:
@@ -79,6 +79,6 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/Values.yaml
+          git add $HELM_CHART_PATH/values.yaml
           git commit -m "Update image tag" || exit 0
           git push
