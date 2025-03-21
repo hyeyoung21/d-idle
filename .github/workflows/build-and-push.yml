@@ -10,6 +10,7 @@ permissions:
   checks: read
 
 on:
+  workflow_dispatch:  # 수동 실행을 위한 트리거
   push:
     branches:
       - main
