@@ -2,6 +2,7 @@ package com.example.didle.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +49,17 @@ public class User {
 
     public enum UserType {
         CUSTOMER, BUSINESS, ADMIN
+    }
+
+    // 모든 필드를 포함한 생성자
+    public User(String address, String email, String fullName, String passwordHash, String phone, UserType userType, String username, Long businessId) {
+        this.address = address;
+        this.email = email;
+        this.fullName = fullName;
+        this.passwordHash = passwordHash;
+        this.phone = phone;
+        this.userType = userType;
+        this.username = username;
     }
 }
 
