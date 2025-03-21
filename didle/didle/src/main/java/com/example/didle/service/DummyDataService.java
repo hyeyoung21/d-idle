@@ -4,14 +4,14 @@ import com.example.didle.model.Category;
 import com.example.didle.model.User;
 import com.example.didle.repository.CategoryRepository;
 import com.example.didle.repository.UserRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class DummyDataService {
-//        implements CommandLineRunner {
+public class DummyDataService implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
@@ -21,11 +21,11 @@ public class DummyDataService {
         this.userRepository = userRepository;
     }
 
-//    @Override
-//    public void run(String... args) throws Exception {
-//        insertCategories();
-//        insertAdminUser();
-//    }
+    @Override
+    public void run(String... args) throws Exception {
+        insertCategories();
+        insertAdminUser();
+    }
 
     private void insertCategories() {
         List<Category> categories = Arrays.asList(
@@ -53,6 +53,7 @@ public class DummyDataService {
             adminUser.setPasswordHash("rhksflwk"); // 실제로는 암호화된 비밀번호를 사용해야 함
             adminUser.setPhone("000-0000-0000");
             adminUser.setUserType(User.UserType.ADMIN); // Enum 값으로 설정
+            adminUser.setUsername("admin");
 
             userRepository.save(adminUser);
             System.out.println("Admin user inserted successfully!");

@@ -51,15 +51,5 @@ public class User {
         CUSTOMER, BUSINESS, ADMIN
     }
 
-    // 모든 필드를 포함한 생성자
-    public User(String address, String email, String fullName, String passwordHash, String phone, UserType userType, String username, Long businessId) {
-        this.address = address;
-        this.email = email;
-        this.fullName = fullName;
-        this.passwordHash = passwordHash;
-        this.phone = phone;
-        this.userType = userType;
-        this.username = username;
-    }
 }
 
