@@ -11,7 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class DummyDataService implements CommandLineRunner {
+public class DummyDataService {
+//        implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
