@@ -37,6 +37,17 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'com.h2database:h2'
+    // AWS SDK BOM (버전 관리)
+    implementation platform('software.amazon.awssdk:bom:2.20.134') // 최신 버전 확인
+
+    // S3 클라이언트
+    implementation 'software.amazon.awssdk:s3'
+
+    // Core 라이브러리
+    implementation 'software.amazon.awssdk:core'
+
+    // 기타 필요한 AWS 서비스 라이브러리
+    implementation 'software.amazon.awssdk:auth'
 }
 
 tasks.named('test') {

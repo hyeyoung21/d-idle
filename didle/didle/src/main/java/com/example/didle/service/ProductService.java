@@ -14,11 +14,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,12 +32,14 @@ public class ProductService {
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final CategoryRepository categoryRepository;
+    private final S3Client s3Client;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CategoryRepository categoryRepository) {
+    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CategoryRepository categoryRepository, S3Client s3Client) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.categoryRepository = categoryRepository;
+        this.s3Client = s3Client;
     }
 
     public Product createProduct(Product product) {
@@ -120,11 +122,13 @@ public class ProductService {
     }
 
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
 
-    @Value("${server.servlet.context-path:}")
-    private String contextPath;
+    @Value("${spring.s3.bucket}")
+    private String bucketName;
+
+    @Value("${cloud.aws.region.static}")
+    private String region;
+
 
     public ProductDTO addProduct(ProductDTO productDTO, MultipartFile image, Long businessId) throws IOException {
         Product product = new Product();
@@ -143,11 +147,25 @@ public class ProductService {
 
         // 이미지 처리
         if (image != null && !image.isEmpty()) {
+            // 1. 고유한 파일 이름 생성
             String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir, fileName);
-            Files.copy(image.getInputStream(), filePath);
-            product.setImageUrl(contextPath + "/uploads/" + fileName);
+
+            // 2. S3에 파일 업로드
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(fileName)
+                            .build(),
+                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
+            );
+
+            // 3. 업로드된 파일의 URL 생성
+            String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
+
+            // 4. Product 엔티티에 이미지 URL 설정
+            product.setImageUrl(imageUrl);
         }
+
 
         Product savedProduct = productRepository.save(product);
 
