@@ -4,7 +4,6 @@ import com.example.didle.model.Category;
 import com.example.didle.model.User;
 import com.example.didle.repository.CategoryRepository;
 import com.example.didle.repository.UserRepository;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -22,11 +21,11 @@ public class DummyDataService {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        insertCategories();
-        insertAdminUser();
-    }
+//    @Override
+//    public void run(String... args) throws Exception {
+//        insertCategories();
+//        insertAdminUser();
+//    }
 
     private void insertCategories() {
         List<Category> categories = Arrays.asList(
