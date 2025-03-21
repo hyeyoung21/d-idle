@@ -19,11 +19,11 @@ on:
         type: string
 
 env:
-  AWS_REGION: us-east-1
-  EKS_CLUSTER: hyeyoung-eks-cluster
-  ARGOCD_SERVER: ae0a5bf24488d445d857495d5a56e9e9-971124218.us-east-1.elb.amazonaws.com
+  AWS_REGION: us-east-2
+  EKS_CLUSTER: hogeun-eks-cluster
+  ARGOCD_SERVER: a7d7b23a835fd4ba289ecedaeedc8c60-844287891.us-east-2.elb.amazonaws.com
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: S-VZWI2zdZPy7ybX
+  ARGOCD_PASSWORD: UM1vnS4TXzE2g5EI
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
 
 jobs:
@@ -44,7 +44,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install kubectl

@@ -1,6 +1,5 @@
 name: Build and Push
 
-
 permissions:
   id-token: write
   deployments: write
@@ -16,8 +15,8 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: hyeyoung-ecr-repo
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: hogeun-ecr-repo
   HELM_CHART_PATH: ./helm-charts/didle
 
 jobs:
@@ -45,7 +44,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
