@@ -50,6 +50,8 @@ public class ProductService {
         this.s3Client = s3Client;
         this.bucketName = bucketName;
         this.region = region;
+        System.out.println("++++++++++++++++++++++++++++++++++++bucketName: " + bucketName);
+        System.out.println("++++++++++++++++++++++++++++++++++++region: " + region);
     }
 
     public Product createProduct(Product product) {
@@ -152,6 +154,7 @@ public class ProductService {
             String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
 
             System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
+
 
             // 2. S3에 파일 업로드
             s3Client.putObject(
