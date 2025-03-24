@@ -234,30 +234,58 @@
         <div class="form-content">
             <button type="button" class="close-button" onclick="closeAddProductForm()">&times;</button>
             <h2>Add Product</h2>
-            <form id="add-product-form">
-                <label for="add-name">Name:</label>
-                <input type="text" id="add-name" name="name" required>
+<!--            <form id="add-product-form">-->
+<!--                <label for="add-name">Name:</label>-->
+<!--                <input type="text" id="add-name" name="name" required>-->
 
-                <label for="add-description">Description:</label>
-                <textarea id="add-description" name="description" rows="3"></textarea>
+<!--                <label for="add-description">Description:</label>-->
+<!--                <textarea id="add-description" name="description" rows="3"></textarea>-->
 
-                <label for="add-price">Price:</label>
-                <input type="number" id="add-price" name="price" step="0.01" required>
+<!--                <label for="add-price">Price:</label>-->
+<!--                <input type="number" id="add-price" name="price" step="0.01" required>-->
 
-                <label for="add-stockQuantity">Stock:</label>
-                <input type="number" id="add-stockQuantity" name="stockQuantity" required>
+<!--                <label for="add-stockQuantity">Stock:</label>-->
+<!--                <input type="number" id="add-stockQuantity" name="stockQuantity" required>-->
 
-                <label for="add-category">Category:</label>
-                <select id="add-category" name="category" required>
-                    <!-- 카테고리 목록이 여기에 동적으로 추가됩니다 -->
-                </select>
+<!--                <label for="add-category">Category:</label>-->
+<!--                <select id="add-category" name="category" required>-->
+<!--                    &lt;!&ndash; 카테고리 목록이 여기에 동적으로 추가됩니다 &ndash;&gt;-->
+<!--                </select>-->
 
-                <!-- Image Upload -->
-                <label for="addImage">Product Image:</label>
-                <input type="file" id="addImage" name="image" accept="image/*">
+<!--                &lt;!&ndash; Image Upload &ndash;&gt;-->
+<!--                <label for="addImage">Product Image:</label>-->
+<!--                <input type="file" id="addImage" name="image" accept="image/*">-->
 
-                <button type="button" onclick="addProduct()">Add</button>
+<!--                <button type="button" onclick="addProduct()">Add</button>-->
+<!--            </form>-->
+            <form id="addProductForm" method="POST" action="/api/business/products" enctype="multipart/form-data">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br>
+
+                <label for="description">Description:</label>
+                <textarea id="description" name="description"></textarea><br>
+
+                <label for="price">Price:</label>
+                <input type="number" id="price" name="price" step=".01" required><br>
+
+                <label for="stockQuantity">Stock:</label>
+                <input type="number" id="stockQuantity" name="stockQuantity"><br>
+
+                <label for="categoryId">Category:</label>
+                <select id="categoryId" name="categoryId">
+                    <!-- Options dynamically populated -->
+                    <option value="">Select a category</option>
+                    <option value="1">Category 1</option>
+                    <option value="2">Category 2</option>
+                    <!-- Add more options dynamically -->
+                </select><br>
+
+                <label for="productImage">Product Image:</label>
+                <input type="file" id="productImage" name="image"><br>
+
+                <button type="submit">Add</button>
             </form>
+
         </div>
     </div>
 
