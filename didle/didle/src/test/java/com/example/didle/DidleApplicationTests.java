@@ -8,7 +8,8 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = {
         "spring.cloud.aws.credentials.access-key=test-access-key",
         "spring.cloud.aws.credentials.secret-key=test-secret-key",
-        "spring.cloud.aws.region.static=us-east-2"
+        "spring.cloud.aws.region.static=us-east-2",
+        "spring.s3.bucket=test-bucket"
 })
 
 @SpringBootTest
