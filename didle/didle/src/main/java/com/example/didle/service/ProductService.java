@@ -33,13 +33,23 @@ public class ProductService {
     private final CartItemRepository cartItemRepository;
     private final CategoryRepository categoryRepository;
     private final S3Client s3Client;
+    private final String bucketName;
+    private final String region;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository, CategoryRepository categoryRepository, S3Client s3Client) {
+    public ProductService(ProductRepository productRepository,
+                          OrderItemRepository orderItemRepository,
+                          CartItemRepository cartItemRepository,
+                          CategoryRepository categoryRepository,
+                          S3Client s3Client,
+                          @Value("${spring.s3.bucket}") String bucketName,
+                          @Value("${cloud.aws.region.static}") String region) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.categoryRepository = categoryRepository;
         this.s3Client = s3Client;
+        this.bucketName = bucketName;
+        this.region = region;
     }
 
     public Product createProduct(Product product) {
@@ -120,15 +130,6 @@ public class ProductService {
         dto.setBusinessId(product.getBusinessId());
         return dto;
     }
-
-
-
-    @Value("${spring.s3.bucket}")
-    private String bucketName;
-
-    @Value("${cloud.aws.region.static}")
-    private String region;
-
 
     public ProductDTO addProduct(ProductDTO productDTO, MultipartFile image, Long businessId) throws IOException {
         Product product = new Product();
