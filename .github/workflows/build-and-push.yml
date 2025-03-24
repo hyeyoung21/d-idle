@@ -62,8 +62,8 @@ jobs:
           ./gradlew build \
             -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
             -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY \
-            -Dspring.cloud.aws.region.static=$AWS_REGION \
-            -Dspring.s3.bucket=$BUCKET_NAME
+            -Dspring.cloud.aws.region.static=${{ env.AWS_REGION }} \
+            -Dspring.s3.bucket=${{ env.BUCKET_NAME }}
 
       - name: Build, tag, and push image to Amazon ECR
         env:
