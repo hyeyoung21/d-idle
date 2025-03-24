@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo
-  tag: 78a71e4243a101bea01d3459266a5f49537e55ed
+  tag: fa7fb182ab6f6ab040f5af0bfd2b1bcabca8e6e2
 service:
   type: ClusterIP
   port: 8080
