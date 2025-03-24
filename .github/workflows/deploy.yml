@@ -47,13 +47,6 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Verify environment variables
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}"
-          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}"
-          echo "AWS_REGION=${{ env.AWS_REGION }}"
-          echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
-
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -76,11 +69,6 @@ jobs:
           argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
 
       - name: Create ArgoCD Application (if not exists)
-        env:
-          AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          BUCKET_NAME: ${{ env.BUCKET_NAME }}
         run: |
           if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
             argocd app create didle-app \
@@ -101,4 +89,14 @@ jobs:
       - name: Set image tag and sync ArgoCD application
         run: |
           argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
+
+    	  argocd app set didle-app \
+      	  --helm-set aws.accessKey=${{ env.AWS_ACCESS_KEY_ID }} \
+      	  --helm-set aws.secretKey=${{ env.AWS_SECRET_ACCESS_KEY }} \
+      	  --helm-set aws.region=${{ env.AWS_REGION }} \
+      	  --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
+      	  --helm-set image.tag=$IMAGE_TAG \
+      	  --server ${{ env.ARGOCD_SERVER }}
+
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
+

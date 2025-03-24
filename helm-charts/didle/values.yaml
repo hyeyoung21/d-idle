@@ -6,5 +6,12 @@ service:
   type: ClusterIP
   port: 8080
 
+aws:
+  accessKey: ""
+  secretKey: ""
+  region: ""
+  bucketName: ""
+
+
 deployment:
   enabled: true
