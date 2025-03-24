@@ -18,6 +18,7 @@ env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: hogeun-ecr-repo
   HELM_CHART_PATH: ./helm-charts/didle
+  BUCKET_NAME: hogeun-bucket
 
 jobs:
   build-and-push:
@@ -55,6 +56,8 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+	  AWS_REGION: ${{ env.AWS_REGION }}
+	  BUCKET_NAME: ${{ env.BUCKET_NAME }}
         run: |
           echo $AWS_ACCESS_KEY_ID
           echo $AWS_SECRET_ACCESS_KEY
@@ -63,7 +66,9 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build \
             -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
-            -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY
+            -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY \
+            -Dspring.cloud.aws.region.static=$AWS_REGION \
+            -Dspring.s3.bucket=$BUCKET_NAME
 
       - name: Build, tag, and push image to Amazon ECR
         env:
