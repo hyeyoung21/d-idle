@@ -7,10 +7,10 @@ service:
   port: 8080
 
 aws:
-  accessKey: ""
-  secretKey: ""
-  region: ""
-  bucketName: ""
+  accessKey: ${AWS_ACCESS_KEY_ID}
+  secretKey: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  bucketName: ${BUCKET_NAME}
 
 
 deployment:

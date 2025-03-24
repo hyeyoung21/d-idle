@@ -86,6 +86,13 @@ jobs:
             exit 1
           fi
     
+      - name: Verify environment variables
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "AWS_REGION=${{ env.AWS_REGION }}"
+          echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
+
       - name: Set image tag and sync ArgoCD application
         run: |
           argocd app set didle-app \
