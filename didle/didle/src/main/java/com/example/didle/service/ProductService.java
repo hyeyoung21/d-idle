@@ -41,8 +41,8 @@ public class ProductService {
                           CartItemRepository cartItemRepository,
                           CategoryRepository categoryRepository,
                           S3Client s3Client,
-                          @Value("${spring.s3.bucket}") String bucketName,
-                          @Value("${cloud.aws.region.static}") String region) {
+                          @Value("${spring.cloud.aws.s3.bucket}") String bucketName,
+                          @Value("${spring.cloud.aws.region.static}") String region) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
