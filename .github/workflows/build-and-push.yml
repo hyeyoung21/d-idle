@@ -9,7 +9,7 @@ permissions:
   checks: read
 
 on:
-  workflow_dispatch:  # 수동 실행을 위한 트리거
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -24,13 +24,6 @@ jobs:
   build-and-push:
 
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      deployments: write
-      contents: write
-      statuses: write
-      actions: write
-      checks: read
 
     steps:
       - name: Checkout code
@@ -56,11 +49,11 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-	  AWS_REGION: ${{ env.AWS_REGION }}
-	  BUCKET_NAME: ${{ env.BUCKET_NAME }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          BUCKET_NAME: ${{ env.BUCKET_NAME }}
         run: |
-          echo $AWS_ACCESS_KEY_ID
-          echo $AWS_SECRET_ACCESS_KEY
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
 
           cd didle/didle
           chmod +x ./gradlew
@@ -92,6 +85,6 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/values.yaml
+          git add $HELM_CHART_PATH/values.yaml || exit 0
           git commit -m "Update image tag" || exit 0
-          git push
+          git push || exit 0
