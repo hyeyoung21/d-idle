@@ -60,7 +60,8 @@ jobs:
           echo $AWS_SECRET_ACCESS_KEY
 
           cd didle/didle
-          chmod +x ./gradlew \
+          chmod +x 
+	  ./gradlew \
             -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
             -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY \
 	    -Dspring.cloud.aws.region.static=us-east-2
