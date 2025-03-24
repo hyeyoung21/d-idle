@@ -22,11 +22,6 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println(accessKey);
-        System.out.println(secretKey);
-        System.out.println(region);
-
         return S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(
