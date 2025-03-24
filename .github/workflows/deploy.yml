@@ -25,6 +25,7 @@ env:
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: jhCJWZ2fxg6ax5u7
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
+  BUCKET_NAME: hogeun-bucket
 
 jobs:
   deploy:
