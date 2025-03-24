@@ -151,6 +151,8 @@ public class ProductService {
             // 1. 고유한 파일 이름 생성
             String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
 
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
+
             // 2. S3에 파일 업로드
             s3Client.putObject(
                     PutObjectRequest.builder()
@@ -159,6 +161,8 @@ public class ProductService {
                             .build(),
                     RequestBody.fromInputStream(image.getInputStream(), image.getSize())
             );
+
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
 
             // 3. 업로드된 파일의 URL 생성
             String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
