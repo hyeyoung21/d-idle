@@ -1,22 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 
-env:
-- name: AWS_ACCESS_KEY_ID
-  valueFrom:
-    secretKeyRef:
-      name: aws-secrets
-      key: accessKey
-- name: AWS_SECRET_ACCESS_KEY
-  valueFrom:
-    secretKeyRef:
-      name: aws-secrets
-      key: secretKey
-- name: AWS_REGION
-  value: {{ .Values.aws.region }}
-- name: BUCKET_NAME
-  value: {{ .Values.aws.bucketName }}
-
 metadata:
   name: {{ .Release.Name }}-deployment
 spec:
@@ -34,3 +18,18 @@ spec:
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           ports:
             - containerPort: {{ .Values.service.port }}
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets
+              key: accessKey
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets
+              key: secretKey
+        - name: AWS_REGION
+          value: {{ .Values.aws.region }}
+        - name: BUCKET_NAME
+          value: {{ .Values.aws.bucketName }}
