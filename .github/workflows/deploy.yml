@@ -88,8 +88,6 @@ jobs:
     
       - name: Set image tag and sync ArgoCD application
         run: |
-          argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
-
     	  argocd app set didle-app \
       	  --helm-set aws.accessKey=${{ env.AWS_ACCESS_KEY_ID }} \
       	  --helm-set aws.secretKey=${{ env.AWS_SECRET_ACCESS_KEY }} \
