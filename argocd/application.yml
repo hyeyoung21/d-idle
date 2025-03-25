@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/rhg4656/d-idle.git
+    repoURL: https://github.com/D-idle/d-idle.git
     path: helm-charts/didle
     helm:
       valueFiles:

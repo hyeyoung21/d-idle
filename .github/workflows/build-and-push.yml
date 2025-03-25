@@ -16,13 +16,13 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr-repo
+  ECR_REPOSITORY: hogeun-ecr
   HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: hogeun-bucket
+  BUCKET_NAME: hogeun-service-data
 
 jobs:
   build-and-push:
-
+    if: github.event.pull_request.merged == true  # 핵심 조건 추가
     runs-on: ubuntu-latest
 
     steps:

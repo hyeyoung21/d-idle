@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/hogeun-ecr-repo
-  tag: dc41a1eb2787ca90df3e06e88fc126a7fb6c93f6
+  tag: 6e09b2a58a694e08d02b4053a1cc9feb026fec3f
 service:
   type: ClusterIP
   port: 8080
@@ -11,7 +11,6 @@ aws:
   secretKey: ${AWS_SECRET_ACCESS_KEY}
   region: ${AWS_REGION}
   bucketName: ${BUCKET_NAME}
-
 
 deployment:
   enabled: true
