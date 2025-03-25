@@ -55,7 +55,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::116981805975:role/hogeun-cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
