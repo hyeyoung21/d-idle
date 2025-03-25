@@ -21,9 +21,9 @@ on:
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: hogeun-eks
-  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+  ARGOCD_SERVER: ${{ vars.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
+  ARGOCD_PASSWORD: ${{ vars.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
   BUCKET_NAME: hogeun-service-data
 
@@ -45,7 +45,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install kubectl
@@ -89,16 +89,16 @@ jobs:
     
       - name: Verify environment variables
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "AWS_ACCESS_KEY_ID=${{ vars.AWS_ACCESS_KEY_ID }}"
+          echo "AWS_SECRET_ACCESS_KEY=${{ vars.AWS_SECRET_ACCESS_KEY }}"
           echo "AWS_REGION=${{ env.AWS_REGION }}"
           echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
 
       - name: Set image tag and sync ArgoCD application
         run: |
           argocd app set didle-app \
-            --helm-set aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --helm-set aws.accessKey=${{ vars.AWS_ACCESS_KEY_ID }} \
+            --helm-set aws.secretKey=${{ vars.AWS_SECRET_ACCESS_KEY }} \
             --helm-set aws.region=${{ env.AWS_REGION }} \
             --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
             --helm-set image.tag=$IMAGE_TAG \
