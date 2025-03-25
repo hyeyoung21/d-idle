@@ -42,13 +42,6 @@ jobs:
           echo "Extracted IMAGE_TAG: $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Debug OIDC Token
-        run: |
-          echo "OIDC Token:"
-          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-               -H "Accept: application/json" \
-               "$ACTIONS_ID_TOKEN_REQUEST_URL"
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

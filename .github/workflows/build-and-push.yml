@@ -39,6 +39,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Debug OIDC Token
+        run: |
+          echo "OIDC Token:"
+          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+               -H "Accept: application/json" \
+               "$ACTIONS_ID_TOKEN_REQUEST_URL"
+
       - name: debug
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
