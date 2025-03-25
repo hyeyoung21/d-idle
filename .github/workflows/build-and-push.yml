@@ -1,12 +1,12 @@
 name: Build and Push
 
 permissions:
-  id-token: write
   deployments: write
-  contents: read
+  contents: write
   statuses: write
   actions: write
   pull-requests: write  # 조직 리포지토리 권한 추가
+  id-token: write
 
 on:
   workflow_dispatch:
@@ -52,15 +52,15 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}"
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::116981805975:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build with Gradle
         env:

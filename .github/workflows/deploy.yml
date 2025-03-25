@@ -2,9 +2,9 @@ name: Deploy
 
 
 permissions:
-  id-token: write
   deployments: write
   contents: write
+  id-token: write
 
 on:
   workflow_run:
