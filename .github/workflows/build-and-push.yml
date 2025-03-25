@@ -6,6 +6,7 @@ permissions:
   contents: write
   statuses: write
   actions: write
+  id-token: write
   pull-requests: write  # 조직 리포지토리 권한 추가
 
 on:
