@@ -6,7 +6,6 @@ permissions:
   contents: write
   statuses: write
   actions: write
-  id-token: write
   pull-requests: write  # 조직 리포지토리 권한 추가
 
 on:
@@ -39,6 +38,16 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          BUCKET_NAME: ${{ env.BUCKET_NAME }}
+        run: |
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
+          echo "AWS_REGION=$AWS_REGION"
+          echo "BUCKET_NAME=$BUCKET_NAME"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
