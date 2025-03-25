@@ -1,6 +1,5 @@
 name: Deploy
 
-
 permissions:
   deployments: write
   contents: write

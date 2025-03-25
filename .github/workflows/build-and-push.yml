@@ -1,12 +1,12 @@
 name: Build and Push
 
 permissions:
+  id-token: write
   deployments: write
   contents: write
   statuses: write
   actions: write
   pull-requests: write  # 조직 리포지토리 권한 추가
-  id-token: write
 
 on:
   workflow_dispatch:
@@ -52,13 +52,11 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}"
 
-    # AWS credentials 설정
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1  
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
