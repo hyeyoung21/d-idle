@@ -3,7 +3,7 @@ name: Build and Push
 permissions:
   id-token: write
   deployments: write
-  contents: write
+  contents: read
   statuses: write
   actions: write
   pull-requests: write  # 조직 리포지토리 권한 추가
@@ -40,8 +40,13 @@ jobs:
           distribution: 'temurin'
 
       - name: Debug OIDC Token
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
         run: |
-          echo "OIDC Token:"
+          echo "OIDC Token Debugging:"
+          echo "Request URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "Request Token: $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
           curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
                -H "Accept: application/json" \
                "$ACTIONS_ID_TOKEN_REQUEST_URL"
