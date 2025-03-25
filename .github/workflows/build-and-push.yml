@@ -34,16 +34,6 @@ jobs:
           fetch-depth: 0  # 전체 커밋 히스토리 불러오기
 
       - name: Set up JDK 17
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          BUCKET_NAME: ${{ env.BUCKET_NAME }}
-        run: |
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
-          echo "AWS_REGION=$AWS_REGION"
-          echo "BUCKET_NAME=$BUCKET_NAME"
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -52,7 +42,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -61,8 +51,8 @@ jobs:
 
       - name: Build with Gradle
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ vars.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
           BUCKET_NAME: ${{ env.BUCKET_NAME }}
         run: |
