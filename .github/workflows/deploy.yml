@@ -1,5 +1,6 @@
 name: Deploy
 
+
 permissions:
   id-token: write
   deployments: write
@@ -18,12 +19,13 @@ on:
         type: string
 
 env:
-  AWS_REGION: us-east-1
-  EKS_CLUSTER: hyeyoung-eks-cluster
-  ARGOCD_SERVER: ae0a5bf24488d445d857495d5a56e9e9-971124218.us-east-1.elb.amazonaws.com
+  AWS_REGION: us-east-2
+  EKS_CLUSTER: hogeun-eks
+  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: S-VZWI2zdZPy7ybX
+  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
+  BUCKET_NAME: hogeun-service-data
 
 jobs:
   deploy:
@@ -43,7 +45,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install kubectl
@@ -71,7 +73,7 @@ jobs:
         run: |
           if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
             argocd app create didle-app \
-              --repo https://github.com/hyeyoung21/d-idle.git \
+              --repo https://github.com/D-idle/d-idle.git \
               --path ./helm-charts/didle \
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
@@ -85,7 +87,23 @@ jobs:
             exit 1
           fi
     
+      - name: Verify environment variables
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "AWS_REGION=${{ env.AWS_REGION }}"
+          echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
+
       - name: Set image tag and sync ArgoCD application
         run: |
-          argocd app set didle-app --helm-set image.tag=$IMAGE_TAG --server ${{ env.ARGOCD_SERVER }}
+          argocd app set didle-app \
+            --helm-set aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --helm-set aws.region=${{ env.AWS_REGION }} \
+            --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
+            --helm-set image.tag=$IMAGE_TAG \
+            --server ${{ env.ARGOCD_SERVER }}
+
           argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
+
+

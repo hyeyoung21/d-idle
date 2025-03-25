@@ -37,6 +37,13 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'com.h2database:h2'
+
+    // Spring Cloud AWS BOM 선언
+    implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.3.0')
+
+    // S3 Starter 의존성 추가
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+
 }
 
 tasks.named('test') {

@@ -1,6 +1,5 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: {{ .Release.Name }}-deployment
 spec:
@@ -14,7 +13,16 @@ spec:
         app: {{ .Release.Name }}
     spec:
       containers:
-        - name: {{ .Release.Name }}-container
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-          ports:
-            - containerPort: {{ .Values.service.port }}
+      - name: {{ .Release.Name }}-container
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: {{ .Values.aws.accessKey | quote }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{ .Values.aws.secretKey | quote }}
+        - name: AWS_REGION
+          value: {{ .Values.aws.region | quote }}
+        - name: BUCKET_NAME
+          value: {{ .Values.aws.bucketName | quote }}
