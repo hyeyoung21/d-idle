@@ -23,8 +23,7 @@ env:
 jobs:
   build-and-push:
     if: |
-      github.event.pull_request.merged == true &&
-      github.repository == 'D-idle/d-idle'  # 실제 조직/리포지토리명으로 변경
+      if: ${{ github.event.pull_request.merged == true && github.repository == 'D-idle/d-idle' }}
     runs-on: ubuntu-latest
 
     steps:
