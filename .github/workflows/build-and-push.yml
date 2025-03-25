@@ -52,15 +52,17 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}"
 
+    # AWS credentials 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1  
+        with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::116981805975:role/hogeun-cicd-deploy-role
-          aws-region: ${{ env.AWS_REGION }}
 
       - name: Build with Gradle
         env:
