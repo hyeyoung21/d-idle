@@ -1,13 +1,6 @@
 name: Build and Push
 
-permissions:
-  id-token: write
-  deployments: write
-  contents: write
-  statuses: write
-  actions: write
-  checks: read
-  pull-requests: write
+permissions: write-all
 
 on:
   workflow_dispatch:
