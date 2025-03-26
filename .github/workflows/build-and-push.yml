@@ -9,6 +9,7 @@ permissions:
   checks: read
   pull-requests: write
 
+
 on:
   workflow_dispatch:
   pull_request:
