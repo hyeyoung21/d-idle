@@ -7,7 +7,6 @@ permissions:
   statuses: write
   actions: write
   checks: read
-  pull-requests: write
 
 on:
   workflow_dispatch:
