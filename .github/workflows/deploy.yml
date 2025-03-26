@@ -21,9 +21,9 @@ on:
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: hogeun-eks-cluster
-  ARGOCD_SERVER: ad0a697f28619452e9082a0653cc198b-700014895.us-east-2.elb.amazonaws.com
+  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: jhCJWZ2fxg6ax5u7
+  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
   BUCKET_NAME: hogeun-bucket
 
