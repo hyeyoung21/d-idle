@@ -6,7 +6,8 @@ permissions:
   contents: write
   statuses: write
   actions: write
-  pull-requests: write  # 조직 리포지토리 권한 추가
+  checks: read
+  pull-requests: write
 
 on:
   workflow_dispatch:
