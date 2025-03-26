@@ -73,7 +73,7 @@ jobs:
         run: |
           if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
             argocd app create didle-app \
-              --repo https://github.com/rhg4656/d-idle.git \
+              --repo https://github.com/D-idle/d-idle.git \
               --path ./helm-charts/didle \
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
