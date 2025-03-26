@@ -1,107 +1,109 @@
-name: Build and Push
+name: Deploy
+
 
 permissions:
   id-token: write
   deployments: write
   contents: write
-  statuses: write
-  actions: write
-  pull-requests: write  # 조직 리포지토리 권한 추가
 
 on:
-  workflow_dispatch:
-  pull_request:
-    types: [closed]
-    branches: [main]
+  workflow_run:
+    workflows: ["Build and Push"]
+    types:
+      - completed
+
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: hogeun-ecr
-  HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: hogeun-service-data
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  EKS_CLUSTER: hogeun-eks-cluster
+  ARGOCD_SERVER: ad0a697f28619452e9082a0653cc198b-700014895.us-east-2.elb.amazonaws.com
+  ARGOCD_USERNAME: admin
+  ARGOCD_PASSWORD: jhCJWZ2fxg6ax5u7
+  HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
+  BUCKET_NAME: hogeun-bucket
 
 jobs:
-  build-and-push:
-    if: |
-      if: ${{ github.event.pull_request.merged == true && github.repository == 'D-idle/d-idle' }}
+  deploy:
     runs-on: ubuntu-latest
-
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Checkout merged code
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}  # 병합된 커밋 체크아웃
-          fetch-depth: 0  # 전체 커밋 히스토리 불러오기
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: debug
+      - name: Extract image tag from values.yaml
+        id: extract-image-tag
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}"
-          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}"
-          echo "AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID }}"
-          echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
+          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
+          echo "Extracted IMAGE_TAG: $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Update kubeconfig
+        run: |
+          aws eks get-token --cluster-name ${{ env.EKS_CLUSTER }} > kubeconfig
+          export KUBECONFIG=./kubeconfig
+
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+          rm argocd-linux-amd64
+
+      - name: Login to ArgoCD
+        run: |
+          argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
+
+      - name: Create ArgoCD Application (if not exists)
+        run: |
+          if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
+            argocd app create didle-app \
+              --repo https://github.com/rhg4656/d-idle.git \
+              --path ./helm-charts/didle \
+              --dest-server https://kubernetes.default.svc \
+              --dest-namespace default \
+              --server ${{ env.ARGOCD_SERVER }}
+          fi
+
+      - name: Verify values.yaml exists
+        run: |
+          if [ ! -f "${{ env.HELM_CHART_PATH }}/values.yaml" ]; then
+            echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
+            exit 1
+          fi
+    
+      - name: Verify environment variables
+        run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-          echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}"
+          echo "AWS_REGION=${{ env.AWS_REGION }}"
+          echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
 
-      - name: Login to Amazon ECR
+      - name: Set image tag and sync ArgoCD application
         run: |
-          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 116981805975.dkr.ecr.us-east-2.amazonaws.com
+          argocd app set didle-app \
+            --helm-set aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --helm-set aws.region=${{ env.AWS_REGION }} \
+            --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
+            --helm-set image.tag=$IMAGE_TAG \
+            --server ${{ env.ARGOCD_SERVER }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+          argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
 
-      - name: Build with Gradle
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          BUCKET_NAME: ${{ env.BUCKET_NAME }}
-        run: |
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
-          echo "AWS_REGION=$AWS_REGION"
-          echo "BUCKET_NAME=$BUCKET_NAME"
 
-          cd didle/didle
-          chmod +x ./gradlew
-          ./gradlew build \
-            -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
-            -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY \
-            -Dspring.cloud.aws.region.static=$AWS_REGION \
-            -Dspring.s3.bucket=$BUCKET_NAME
-
-      - name: Build, tag, and push image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG didle/didle
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      - name: Save image tag as artifact
-        run: echo "${{ github.sha }}" > image_tag.txt
-
-      - name: Update Helm chart
-        run: |
-          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/values.yaml
-          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/values.yaml
-
-      - name: Commit and push if changed
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/values.yaml || exit 0
-          git commit -m "Update image tag" || exit 0
-          git push || exit 0
