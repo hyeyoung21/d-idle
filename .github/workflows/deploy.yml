@@ -48,6 +48,31 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Install External DNS
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm install external-dns bitnami/external-dns \
+            --set provider=aws \
+            --set aws.zoneType=public \
+            --set txtOwnerId=my-identifier
+
+      - name: Update Route53 DNS
+        run: |
+          ALB_HOSTNAME=$(kubectl get ingress didle-app-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id ${{ secrets.ROUTE53_ZONE_ID }} \
+            --change-batch '{
+              "Changes": [{
+                "Action": "UPSERT",
+                "ResourceRecordSet": {
+                  "Name": "www.didle.shop",
+                  "Type": "CNAME",
+                  "TTL": 300,
+                  "ResourceRecords": [{"Value":"'$ALB_HOSTNAME'"}]
+                }
+              }]
+            }'
+
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
