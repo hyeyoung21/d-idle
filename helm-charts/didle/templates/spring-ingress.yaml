@@ -18,5 +18,16 @@ spec:
         backend:
           service:
             name: didle-app-service
-            port: 
+            port:
               number: 8080
+  - host: www.didle.shop
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: didle-app-service
+            port:
+              number: 8080
+
