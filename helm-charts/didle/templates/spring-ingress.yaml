@@ -1,4 +1,6 @@
-# helm-charts/didle/templates/spring-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
+  name: didle-app-ingress
   annotations:
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.albCertArn | quote }}
