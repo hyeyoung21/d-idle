@@ -29,4 +29,4 @@ ingress:
         - path: /
           pathType: Prefix
 
-albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/Z0806459397UC3SHTNFHF"
+albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
