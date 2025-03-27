@@ -4,7 +4,8 @@ metadata:
   name: didle-app-ingress
   annotations:
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.albCertArn | quote }}
-    # 기타 필요한 annotations
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
 spec:
   rules:
   - host: www.didle.shop
