@@ -6,6 +6,9 @@ metadata:
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.albCertArn | quote }}
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
+    external-dns.alpha.kubernetes.io/hostname: didle.shop,www.didle.shop
+  
+
 spec:
   rules:
   - host: www.didle.shop
