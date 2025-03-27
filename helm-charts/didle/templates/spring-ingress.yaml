@@ -4,3 +4,16 @@ metadata:
   name: didle-app-ingress
   annotations:
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.albCertArn | quote }}
+    # 기타 필요한 annotations
+spec:
+  rules:
+  - host: www.didle.shop
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: didle-app-service
+            port: 
+              number: 8080
