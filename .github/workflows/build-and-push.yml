@@ -21,7 +21,7 @@ on:
 
 
 env:
-  AWS_REGION: us-east-2
+  AWS_REGION: us-west-2
   ECR_REPOSITORY: seunguk-ecr
   HELM_CHART_PATH: ./helm-charts/didle
   BUCKET_NAME: seunguk-service-data
