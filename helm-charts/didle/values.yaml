@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: 116981805975.dkr.ecr.us-west-2.amazonaws.com/seunguk-ecr
-  tag: 0dad6c1e9c680d997b14398100641bbf3fd34224
+  tag: b2f189f890998239f3d4d89faf14142bcb737874
 service:
   type: ClusterIP
   port: 8080
