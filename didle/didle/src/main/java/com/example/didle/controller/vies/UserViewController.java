@@ -17,53 +17,53 @@ public class UserViewController {
 
     @GetMapping("/signup")
     public String showSignupForm() {
-        return "/user/signup";
+        return "user/signup";
     }
 
     @GetMapping("/login")
     public String showLoginForm() {
-        return "/user/login";
+        return "user/login";
     }
 
     @GetMapping("/business-register")
     public String showBusinessRegistrationForm() {
-        return "/business/b_register";
+        return "business/b_register";
     }
 
     @GetMapping("/business")
     public String goToBusinessMain() {
-        return "/business/b_dashboard";
+        return "business/b_dashboard";
     }
 
     @GetMapping("/business/profile")
     public String showBusiness(HttpSession session, Model model) {
-        return "/business/b_profile";
+        return "business/b_profile";
     }
 
 
     @GetMapping("/business/products")
     public String showProducts() {
-        return "/business/b_products";
+        return "business/b_products";
     }
 
     @GetMapping("/business/orders")
     public String showOrders() {
-        return "/business/b_orders";
+        return "business/b_orders";
     }
 
     @GetMapping("/admin")
     public String showAdmin() {
-        return "/admin/a_user";
+        return "admin/a_user";
     }
 
     @GetMapping("/admin/businesses")
     public String showAdminBusiness() {
-        return "/admin/a_business";
+        return "admin/a_business";
     }
 
     @GetMapping("/admin/products")
     public String showAdminProduct() {
-        return "/admin/a_products";
+        return "admin/a_products";
     }
 }
 
