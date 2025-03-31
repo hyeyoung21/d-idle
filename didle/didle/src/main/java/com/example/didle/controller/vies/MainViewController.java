@@ -13,17 +13,17 @@ public class MainViewController {
 
     @GetMapping("/products")
     public String products() {
-        return "/user/products";
+        return "user/products";
     }
 
     @GetMapping("/cart")
     public String cart() {
-        return "/user/cart";
+        return "user/cart";
     }
 
     @GetMapping("/orders")
     public String orders() {
-        return "/user/orders";
+        return "user/orders";
     }
 }
 
