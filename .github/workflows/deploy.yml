@@ -20,12 +20,12 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  EKS_CLUSTER: hogeun-eks-cluster
+  EKS_CLUSTER: didle-eks-cluster
   ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
-  BUCKET_NAME: hogeun-bucket
+  BUCKET_NAME: didle-bucket
 
 jobs:
   deploy:
@@ -45,7 +45,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/hogeun-cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install kubectl
