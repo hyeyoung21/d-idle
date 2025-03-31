@@ -2,8 +2,8 @@
 d&amp;idle
 
 
-이름은 변경 예정
-
+IaC 를 이용한 클라우드 네이티브 운영 프로젝트 
+ 
 DevOps 구성 (EKS + CI/CD + 모니터링)
 Kubernetes (EKS): 컨테이너 오케스트레이션
 
