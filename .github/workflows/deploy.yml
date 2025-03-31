@@ -25,7 +25,7 @@ env:
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
-  BUCKET_NAME: didle-bucket
+  BUCKET_NAME: didle-service-data
 
 jobs:
   deploy:
