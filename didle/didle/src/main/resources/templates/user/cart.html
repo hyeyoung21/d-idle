@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didle - Cart</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        #cart-items {
+            margin-bottom: 2rem;
+        }
+
+        .cart-item {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .cart-item h3 {
+            color: #3498db;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item p {
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item input[type="number"] {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .cart-item button {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .cart-item button:hover {
+            background-color: #c0392b;
+        }
+
+        #total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background-color: #2ecc71;
+            color: #fff;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container">
+    <h2>Your Cart</h2>
+    <div id="cart-items">
+        <!-- Cart items will be displayed here -->
+    </div>
+    <div id="total">
+        <!-- Total price will be displayed here -->
+    </div>
+    <button onclick="checkout()">Checkout</button>
+</div>
+
+<script th:inline="javascript">
+    let cartItems = [];
+
+    function loadCartItems() {
+        const userId = /*[[${session.userId}]]*/ null;
+        if (userId) {
+            fetch(`/api/cart/user`)
+                .then(response => response.json())
+                .then(items => {
+                    cartItems = items;
+                    const cartItemsContainer = document.getElementById('cart-items');
+                    let total = 0;
+                    cartItemsContainer.innerHTML = ''; // Clear previous cart items
+
+                    items.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'cart-item';
+                        itemElement.innerHTML = `
+                            <h3>${item.productName}</h3>
+                            <p>
+                                Quantity:
+                                <input type="number" id="quantity-${item.id}" value="1" min="1" max="10" onchange="updateTotal()">
+                            </p>
+                            <p>Price: $${item.price.toFixed(2)}</p>
+                            <button onclick="removeFromCart(${item.id})">Remove</button>
+                        `;
+                        cartItemsContainer.appendChild(itemElement);
+                        total += item.price;
+                    });
+                    document.getElementById('total').innerHTML = `Total: $${total.toFixed(2)}`;
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            alert('Please login to view your cart');
+            window.location.href = '/login';
+        }
+    }
+
+    function removeFromCart(cartItemId) {
+        fetch(`/api/cart/${cartItemId}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                alert('Item removed from cart!');
+                location.reload();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    function checkout() {
+        const productQuantities = {};
+        cartItems.forEach(item => {
+            const quantity = document.getElementById(`quantity-${item.id}`).value;
+            productQuantities[item.productId] = parseInt(quantity);
+        });
+
+        fetch('/api/cart/checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(productQuantities)
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                if (message === 'Checkout successful') {
+                    window.location.href = '/orders'; // Redirect to home page or order confirmation page
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function updateTotal() {
+        let total = 0;
+        cartItems.forEach(item => {
+            const quantity = document.getElementById(`quantity-${item.id}`).value;
+            total += item.price * quantity;
+        });
+        document.getElementById('total').innerHTML = `Total: $${total.toFixed(2)}`;
+    }
+
+    // Load cart items when the page loads
+    document.addEventListener('DOMContentLoaded', loadCartItems);
+</script>
+<script src="/js/logout.js"></script>
+</body>
+</html>

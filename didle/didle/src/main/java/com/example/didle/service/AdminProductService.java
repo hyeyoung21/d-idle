@@ -1,7 +1,7 @@
 package com.example.didle.service;
 
-import com.example.didle.model.Product;
-import com.example.didle.model.ProductDTO;
+import com.example.didle.model.vo.Product;
+import com.example.didle.model.dto.ProductDTO;
 import com.example.didle.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

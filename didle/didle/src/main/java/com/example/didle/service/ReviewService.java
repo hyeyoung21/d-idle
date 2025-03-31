@@ -1,6 +1,6 @@
 package com.example.didle.service;
 
-import com.example.didle.model.Review;
+import com.example.didle.model.vo.Review;
 import com.example.didle.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

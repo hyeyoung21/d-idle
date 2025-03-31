@@ -1,7 +1,7 @@
 package com.example.didle.repository;
 
-import com.example.didle.model.Category;
-import com.example.didle.model.Product;
+import com.example.didle.model.vo.Category;
+import com.example.didle.model.vo.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

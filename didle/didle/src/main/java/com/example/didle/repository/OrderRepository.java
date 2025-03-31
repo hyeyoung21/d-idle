@@ -1,6 +1,6 @@
 package com.example.didle.repository;
 
-import com.example.didle.model.Order;
+import com.example.didle.model.vo.Order;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
