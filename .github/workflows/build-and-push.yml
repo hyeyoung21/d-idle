@@ -21,10 +21,10 @@ on:
 
 
 env:
-  AWS_REGION: us-west-2
-  ECR_REPOSITORY: seunguk-ecr
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: didle-ecr
   HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: seunguk-service-data
+  BUCKET_NAME: didle-service-data
 
 jobs:
   build-and-push:
@@ -50,7 +50,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/seunguk-cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
