@@ -1,6 +1,6 @@
 package com.example.didle.service;
 
-import com.example.didle.model.Category;
+import com.example.didle.model.vo.Category;
 import com.example.didle.repository.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

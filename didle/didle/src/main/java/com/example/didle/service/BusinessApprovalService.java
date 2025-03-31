@@ -1,6 +1,6 @@
 package com.example.didle.service;
 
-import com.example.didle.model.BusinessApproval;
+import com.example.didle.model.vo.BusinessApproval;
 import com.example.didle.repository.BusinessApprovalRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

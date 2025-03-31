@@ -1,7 +1,7 @@
 package com.example.didle.service;
 
-import com.example.didle.model.Category;
-import com.example.didle.model.User;
+import com.example.didle.model.vo.Category;
+import com.example.didle.model.vo.User;
 import com.example.didle.repository.CategoryRepository;
 import com.example.didle.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;

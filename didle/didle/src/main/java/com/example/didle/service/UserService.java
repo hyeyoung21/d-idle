@@ -1,8 +1,8 @@
 package com.example.didle.service;
 
-import com.example.didle.model.User;
-import com.example.didle.model.User.UserType;
-import com.example.didle.model.UserDTO;
+import com.example.didle.model.vo.User;
+import com.example.didle.model.vo.User.UserType;
+import com.example.didle.model.dto.UserDTO;
 import com.example.didle.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

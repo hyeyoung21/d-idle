@@ -1,6 +1,11 @@
 package com.example.didle.service;
 
-import com.example.didle.model.*;
+import com.example.didle.model.dto.OrderDTO;
+import com.example.didle.model.dto.OrderItemDTO;
+import com.example.didle.model.vo.Order;
+import com.example.didle.model.vo.OrderItem;
+import com.example.didle.model.vo.Product;
+import com.example.didle.model.vo.User;
 import com.example.didle.repository.OrderRepository;
 import com.example.didle.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;

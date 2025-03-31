@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didle - Home</title>
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/chatbot.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        #featured-product {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        #featured-product h3 {
+            color: #3498db;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        #featured-product p {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Include the header -->
+<div th:replace="fragments/header :: header"></div>
+
+<script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+
+<div class="container">
+    <h2>Most Sold Product</h2>
+    <div id="featured-product"></div>
+</div>
+
+<!-- 챗봇 토글 버튼 -->
+<div th:replace="fragments/chatbot :: chatbot"></div>
+
+<script src="/js/chatbot.js"></script>
+<script src="/js/logout.js"></script>
+<script>
+    // Fetch and display the most sold product
+    fetch('/api/products/most-sold')
+        .then(response => response.json())
+        .then(product => {
+            const productContainer = document.getElementById('featured-product');
+            productContainer.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <p>Price: $${product.price}</p>
+            `;
+        })
+        .catch(error => console.error('Error:', error));
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 package com.example.didle.repository;
 
-import com.example.didle.model.BusinessApproval;
+import com.example.didle.model.vo.BusinessApproval;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
