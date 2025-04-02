@@ -1,4 +1,4 @@
-package com.example.didle.model.vo;
+package com.example.didle.model.dto;
 
 import lombok.Data;
 
