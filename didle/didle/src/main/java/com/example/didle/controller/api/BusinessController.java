@@ -5,7 +5,7 @@ import com.example.didle.model.dto.DashboardDTO;
 import com.example.didle.model.dto.OrderDTO;
 import com.example.didle.model.dto.ProductDTO;
 import com.example.didle.model.vo.Business;
-import com.example.didle.model.vo.UpdateOrderStatusRequest;
+import com.example.didle.model.dto.UpdateOrderStatusRequest;
 import com.example.didle.service.BusinessService;
 import com.example.didle.service.OrderService;
 import com.example.didle.service.ProductService;

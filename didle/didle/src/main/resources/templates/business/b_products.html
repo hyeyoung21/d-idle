@@ -129,7 +129,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="edit-category" class="form-label">Category:</label>
-                            <select id="edit-category" name="category" class="form-select" required></select>
+                            <select id="edit-category" name="categoryId" class="form-select" required></select>
                         </div>
                         <div class="mb-3">
                             <label for="editImage" class="form-label">Product Image:</label>
@@ -201,10 +201,21 @@
     }
 
     function saveProduct() {
-        const formData = new FormData(document.getElementById('edit-product-form'));
+        const form = document.getElementById('edit-product-form');
+        const formData = new FormData(form);
+
+        // FormData를 JSON 객체로 변환
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+
         fetch(`/api/products/${currentProductId}`, {
             method: 'PUT',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonData)
         })
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -220,6 +231,7 @@
                 alert('Failed to update product. Please try again later.');
             });
     }
+
 
     function deleteProduct(productId) {
         if (confirm('Are you sure you want to delete this product?')) {
