@@ -4,323 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/header.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            background-color: #f9f9f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            width: 80%;
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        /* Add Product Form Styles */
-        #add-product-form-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-
-        #add-product-form-container .form-content {
-            background-color: #f0f8ff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
-            width: 80%;
-            max-width: 600px;
-            position: relative;
-            /* For close button positioning */
+        .card-title {
+            color: #9b2c2c;
         }
-
-        #add-product-form h2 {
-            color: #2c3e50;
-            text-align: left;
-            margin-bottom: 1.5rem;
-        }
-
-        #add-product-form {
-            display: grid;
-            gap: 1rem;
-        }
-
-        #add-product-form label {
-            font-weight: bold;
-        }
-
-        #add-product-form input,
-        #add-product-form textarea,
-        #edit-product-form input,
-        #edit-product-form textarea {
-            width: 100%;
-            padding: 0.7rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        #add-product-form button,
-        #edit-product-form button {
-            background-color: #2ecc71;
-            color: #fff;
-            padding: 0.8rem 1rem;
+        .btn-danger {
+            background-color: #9b2c2c;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
         }
-
-        #add-product-form button:hover,
-        #edit-product-form button:hover {
-            background-color: #27ae60;
+        .btn-danger:hover {
+            background-color: #d46a6a;
         }
-
-        /* Product List Styles */
-        #product-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+        .modal-header {
+            background-color: #9b2c2c;
+            color: white;
         }
-
-        .product-item {
-            background-color: #f0f8ff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .product-item:hover {
-            transform: translateY(-5px);
-        }
-
-        .product-item h3 {
-            color: #3498db;
-            margin-top: 0;
-            margin-bottom: 0.8rem;
-            font-size: 1.4rem;
-        }
-
-        .product-item p {
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        /* Edit Product Form Styles */
-        #edit-form-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #edit-form-container .form-content {
-            background-color: #f0f8ff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
-            width: 80%;
-            max-width: 600px;
-            position: relative; /* For close button positioning */
-        }
-
-        #edit-form h2 {
-            color: #2c3e50;
-            text-align: left;
-            margin-bottom: 1.5rem;
-        }
-
-        #edit-product-form {
-            display: grid;
-            gap: 1rem;
-        }
-
-        #edit-product-form label {
-            font-weight: bold;
-        }
-
-        #product-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        /* Add button for opening the add product form */
-        #open-add-product-form {
-            background-color: #3498db;
-            color: #fff;
-            padding: 0.8rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-            margin-bottom: 1rem;
-        }
-
-        #open-add-product-form:hover {
-            background-color: #2980b9;
-        }
-
-        /* Style for the close button */
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            color: #555;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .close-button:hover {
-            color: #222;
-        }
-
         .product-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-            margin-bottom: 0.5rem;
+            width: 100%;
+            height: 200px;
+            object-fit: contain; /* cover에서 contain으로 변경 */
+            background-color: #f8f9fa; /* 이미지 배경색 추가 */
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .btn-primary {
+            background-color: #9b2c2c; /* 기존의 danger 버튼과 같은 색상으로 통일 */
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #d46a6a; /* 호버 시 색상도 통일 */
         }
     </style>
 </head>
 <body>
 <div th:replace="fragments/b_header :: b_header"></div>
-<div class="container">
-    <h1>My Products</h1>
+<div class="container my-5">
+    <h1 class="text-center text-danger mb-4">My Products</h1>
 
-    <!-- Button to open the add product form -->
-    <button id="open-add-product-form" onclick="openAddProductForm()">Add Product</button>
+    <div class="d-flex justify-content-end mb-3">
+        <button id="open-add-product-form" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+    </div>
 
-    <!-- Add Product Form -->
-    <div id="add-product-form-container" style="display: none">
-        <div class="form-content">
-            <button type="button" class="close-button" onclick="closeAddProductForm()">&times;</button>
-            <h2>Add Product</h2>
-            <form id="add-product-form">
-                <label for="add-name">Name:</label>
-                <input type="text" id="add-name" name="name" required>
+    <div id="product-list" class="row g-4">
+        <!-- Products will be dynamically loaded here -->
+    </div>
 
-                <label for="add-description">Description:</label>
-                <textarea id="add-description" name="description" rows="3"></textarea>
-
-                <label for="add-price">Price:</label>
-                <input type="number" id="add-price" name="price" step="0.01" required>
-
-                <label for="add-stockQuantity">Stock:</label>
-                <input type="number" id="add-stockQuantity" name="stockQuantity" required>
-
-                <label for="add-category">Category:</label>
-                <select id="add-category" name="category" required>
-                    <!-- 카테고리 목록이 여기에 동적으로 추가됩니다 -->
-                </select>
-
-                <!-- Image Upload -->
-                <label for="addImage">Product Image:</label>
-                <input type="file" id="addImage" name="image" accept="image/*">
-
-                <button type="button" onclick="addProduct()">Add</button>
-            </form>
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-product-form">
+                        <div class="mb-3">
+                            <label for="add-name" class="form-label">Name:</label>
+                            <input type="text" id="add-name" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-description" class="form-label">Description:</label>
+                            <textarea id="add-description" name="description" rows="3" class="form-control"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-price" class="form-label">Price:</label>
+                            <input type="number" id="add-price" name="price" step="0.01" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-stockQuantity" class="form-label">Stock:</label>
+                            <input type="number" id="add-stockQuantity" name="stockQuantity" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="add-category" class="form-label">Category:</label>
+                            <select id="add-category" name="category" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addImage" class="form-label">Product Image:</label>
+                            <input type="file" id="addImage" name="image" accept="image/*" class="form-control">
+                        </div>
+                        <button type="button" onclick="addProduct()" class="btn btn-danger w-100">Add</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="product-list">
-        <!-- Products will be loaded here -->
-    </div>
-
-    <!-- Edit Product Form (Hidden by default) -->
-    <div id="edit-form-container" style="display: none">
-        <div class="form-content">
-            <button type="button" class="close-button" onclick="closeEditForm()">&times;</button>
-            <h2>Edit Product</h2>
-            <form id="edit-product-form">
-                <label for="edit-name">Name:</label>
-                <input type="text" id="edit-name" name="name">
-
-                <label for="edit-description">Description:</label>
-                <textarea id="edit-description" name="description" rows="3"></textarea>
-                <label for="edit-price">Price:</label>
-                <input type="number" id="edit-price" name="price" step="0.01">
-
-                <label for="edit-stockQuantity">Stock:</label>
-                <input type="number" id="edit-stockQuantity" name="stockQuantity">
-
-                <!-- Image Upload for Edit Form -->
-                <label for="editImage">Product Image:</label>
-                <input type="file" id="editImage" name="image" accept="image/*">
-
-                <button type="button" onclick="saveProduct()">Save</button>
-                <button type="button" onclick="cancelEdit()">Cancel</button>
-            </form>
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-product-form">
+                        <div class="mb-3">
+                            <label for="edit-name" class="form-label">Name:</label>
+                            <input type="text" id="edit-name" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-description" class="form-label">Description:</label>
+                            <textarea id="edit-description" name="description" rows="3" class="form-control"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-price" class="form-label">Price:</label>
+                            <input type="number" id="edit-price" name="price" step="0.01" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-stockQuantity" class="form-label">Stock:</label>
+                            <input type="number" id="edit-stockQuantity" name="stockQuantity" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-category" class="form-label">Category:</label>
+                            <select id="edit-category" name="category" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editImage" class="form-label">Product Image:</label>
+                            <input type="file" id="editImage" name="image" accept="image/*" class="form-control">
+                        </div>
+                        <button type="button" onclick="saveProduct()" class="btn btn-danger w-100">Save</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
+<script src="/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let currentProductId = null; // Store the ID of the product being edited
+    let currentProductId = null;
 
     function loadSellerProducts() {
         fetch('/api/products/seller')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(products => {
                 const productList = document.getElementById('product-list');
                 productList.innerHTML = '';
                 products.forEach(product => {
-                    const imageUrl = product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" class="product-image">` : '';
+                    const imageUrl = product.imageUrl ? product.imageUrl : 'https://via.placeholder.com/300x200';
                     const productElement = document.createElement('div');
-                    productElement.className = 'product-item';
+                    productElement.className = 'col-md-4 mb-4';
                     productElement.innerHTML = `
-                            ${imageUrl}
-                            <h3>${product.name}</h3>
-                            <p>${product.description}</p>
-                            <p>Price: $${product.price}</p>
-                            <p>Stock: ${product.stockQuantity}</p>
-                            <p>Category: ${product.categoryName || 'No Category'}</p>
-                            <button onclick="showEditForm(${product.id}, '${product.name}', '${product.description}', ${product.price}, ${product.stockQuantity})">Edit</button>
-                            <button onclick="deleteProduct(${product.id})">Delete</button>
-                        `;
+                        <div class="card h-100">
+                            <img src="${imageUrl}" class="card-img-top product-image" alt="${product.name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text">${product.description}</p>
+                                <p class="card-text">Price: $${product.price}</p>
+                                <p class="card-text">Stock: ${product.stockQuantity}</p>
+                                <p class="card-text">Category: ${product.categoryName || 'No Category'}</p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <button class="btn btn-primary btn-sm" onclick="showEditForm(${product.id})">Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">Delete</button>
+                            </div>
+                        </div>
+                    `;
                     productList.appendChild(productElement);
                 });
             })
@@ -330,49 +185,35 @@
             });
     }
 
-    function showEditForm(productId, name, description, price, stockQuantity) {
+    function showEditForm(productId) {
         currentProductId = productId;
-
-        // Set values to edit form
-        document.getElementById('edit-name').value = name;
-        document.getElementById('edit-description').value = description;
-        document.getElementById('edit-price').value = price;
-        document.getElementById('edit-stockQuantity').value = stockQuantity;
-
-        // Show edit form
-        document.getElementById('edit-form-container').style.display = 'flex';
+        fetch(`/api/products/${productId}`)
+            .then(response => response.json())
+            .then(product => {
+                document.getElementById('edit-name').value = product.name;
+                document.getElementById('edit-description').value = product.description;
+                document.getElementById('edit-price').value = product.price;
+                document.getElementById('edit-stockQuantity').value = product.stockQuantity;
+                document.getElementById('edit-category').value = product.categoryId;
+                new bootstrap.Modal(document.getElementById('editProductModal')).show();
+            })
+            .catch(error => console.error('Error:', error));
     }
 
     function saveProduct() {
-        const name = document.getElementById('edit-name').value;
-        const description = document.getElementById('edit-description').value;
-        const price = document.getElementById('edit-price').value;
-        const stockQuantity = document.getElementById('edit-stockQuantity').value;
-        const imageFile = document.getElementById('editImage').files[0];
-
-        let formData = new FormData();
-        formData.append('name', name);
-        formData.append('description', description);
-        formData.append('price', price);
-        formData.append('stockQuantity', stockQuantity);
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
-
+        const formData = new FormData(document.getElementById('edit-product-form'));
         fetch(`/api/products/${currentProductId}`, {
             method: 'PUT',
-            body: formData,
+            body: formData
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
-            .then(data => {
+            .then(() => {
                 alert('Product updated successfully!');
-                closeEditForm();
-                loadSellerProducts(); // Reload product list
+                bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
+                loadSellerProducts();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -380,20 +221,12 @@
             });
     }
 
-    function cancelEdit() {
-        document.getElementById('edit-form-container').style.display = 'none';
-    }
-
     function deleteProduct(productId) {
         if (confirm('Are you sure you want to delete this product?')) {
-            fetch(`/api/products/${productId}`, {
-                method: 'DELETE'
-            })
+            fetch(`/api/products/${productId}`, { method: 'DELETE' })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    loadSellerProducts(); // Reload the product list
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    loadSellerProducts();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -403,41 +236,20 @@
     }
 
     function addProduct() {
-        const name = document.getElementById('add-name').value;
-        const description = document.getElementById('add-description').value;
-        const price = document.getElementById('add-price').value;
-        const stockQuantity = document.getElementById('add-stockQuantity').value;
-        const categoryId = document.getElementById('add-category').value;
-        const imageFile = document.getElementById('addImage').files[0];
-
-        let formData = new FormData();
-        formData.append('name', name);
-        formData.append('description', description);
-        formData.append('price', price);
-        formData.append('stockQuantity', stockQuantity);
-        formData.append('categoryId', categoryId);
-        if (imageFile) {
-            formData.append('image', imageFile);
-        }
-
+        const formData = new FormData(document.getElementById('add-product-form'));
         fetch('/api/business/products', {
             method: 'POST',
-            body: formData,
+            body: formData
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
-            .then(data => {
+            .then(() => {
                 alert('Product added successfully!');
-                document.getElementById('add-name').value = '';
-                document.getElementById('add-description').value = '';
-                document.getElementById('add-price').value = '';
-                document.getElementById('add-stockQuantity').value = '';
-                closeAddProductForm();
-                loadSellerProducts(); // Reload product list
+                document.getElementById('add-product-form').reset();
+                bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
+                loadSellerProducts();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -445,56 +257,29 @@
             });
     }
 
-    // Function to open the add product form
-    function openAddProductForm() {
-        document.getElementById('add-product-form-container').style.display = 'flex';
-        loadCategories();
-    }
-
-    // Function to load categories into the select element
     function loadCategories() {
         fetch('/api/categories')
             .then(response => response.json())
             .then(categories => {
-                const categorySelect = document.getElementById('add-category');
-                categorySelect.innerHTML = '<option value="">All Categories</option>'; // Clear existing options
-
+                const addCategorySelect = document.getElementById('add-category');
+                const editCategorySelect = document.getElementById('edit-category');
+                addCategorySelect.innerHTML = '<option value="">Select Category</option>';
+                editCategorySelect.innerHTML = '<option value="">Select Category</option>';
                 categories.content.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.text = category.name;
-                    categorySelect.appendChild(option);
+                    addCategorySelect.appendChild(option.cloneNode(true));
+                    editCategorySelect.appendChild(option);
                 });
             })
             .catch(error => console.error('Error loading categories:', error));
     }
 
-    // Function to close the add product form
-    function closeAddProductForm() {
-        document.getElementById('add-product-form-container').style.display = 'none';
-    }
-
-    // Function to close the add product form
-    function closeEditForm() {
-        document.getElementById('edit-form-container').style.display = 'none';
-    }
-
-    // Event listener to close the add product form when clicking outside the form
-    window.addEventListener('click', function (event) {
-        const addProductFormContainer = document.getElementById('add-product-form-container');
-        if (event.target === addProductFormContainer) {
-            closeAddProductForm();
-        }
-        const editProductFormContainer = document.getElementById('edit-form-container');
-        if (event.target === editProductFormContainer) {
-            closeEditForm();
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSellerProducts();
+        loadCategories();
     });
-
-    // Load products when the page loads
-    document.addEventListener('DOMContentLoaded', loadSellerProducts);
 </script>
-
-<script src="/js/logout.js"></script>
 </body>
 </html>

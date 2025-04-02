@@ -4,119 +4,131 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/header.css">
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-      background-color: #f4f4f4;
-      color: #333;
-      margin: 0;
-      padding: 0;
+    .card {
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+      margin-bottom: 30px;
     }
-
-    .container {
-      width: 80%;
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .card-header {
+      background-color: #9b2c2c;
+      color: white;
+      border-top-left-radius: 12px !important;
+      border-top-right-radius: 12px !important;
+      padding: 15px 20px;
     }
-
-    h1 {
-      color: #2c3e50;
+    .table {
+      margin-bottom: 0;
+    }
+    .table th, .table td {
       text-align: center;
-      margin-bottom: 1.5rem;
+      vertical-align: middle;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    .table th {
+      font-weight: 600;
+      color: #495057;
     }
-
-    th, td {
-      padding: 1.2rem;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #3498db;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    tbody tr:hover {
-      background-color: #f9f9f9;
-    }
-
-    .approve-btn,
-    .reject-btn,
-    .delete-btn {
-      padding: 0.6rem 1rem;
+    .btn-approve {
+      background-color: #28a745;
+      color: white;
       border: none;
+      transition: all 0.3s;
+      padding: 6px 12px;
       border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      font-size: 0.9rem;
-      margin: 0.2rem;
+      margin-right: 5px;
     }
-
-    .approve-btn {
-      background-color: #2ecc71;
+    .btn-approve:hover {
+      background-color: #218838;
       color: white;
     }
-
-    .reject-btn {
-      background-color: #e74c3c;
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      transition: all 0.3s;
+      padding: 6px 12px;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+    .btn-reject:hover {
+      background-color: #c82333;
       color: white;
     }
-
-    .delete-btn {
-      background-color: #9b59b6;
+    .btn-delete {
+      background-color: #9b2c2c;
+      color: white;
+      border: none;
+      transition: all 0.3s;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+    .btn-delete:hover {
+      background-color: #d46a6a;
       color: white;
     }
-
-    .approve-btn:hover {
-      background-color: #27ae60;
+    .page-title {
+      color: #9b2c2c;
+      margin-bottom: 25px;
+      margin-top: 30px;
+      font-weight: 600;
     }
-
-    .reject-btn:hover {
-      background-color: #c0392b;
+    .badge-status {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
     }
-
-    .delete-btn:hover {
-      background-color: #8e44ad;
+    .badge-pending {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    .badge-approved {
+      background-color: #28a745;
+      color: white;
+    }
+    .badge-rejected {
+      background-color: #dc3545;
+      color: white;
     }
   </style>
 </head>
 <body>
 <div th:replace="fragments/a_header :: a_header"></div>
 
-<div class="container">
-  <h1>Business Management</h1>
-  <table id="businessTable">
-    <thead>
-    <tr>
-      <th>ID</th>
-      <th>Business Name</th>
-      <th>Business Number</th>
-      <th>Address</th>
-      <th>Phone</th>
-      <th>Approval Status</th>
-      <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- Businesses will be loaded here -->
-    </tbody>
-  </table>
+<div class="container my-5">
+  <h1 class="page-title text-center">Business Management</h1>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Business List</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table id="businessTable" class="table table-hover table-striped">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Business Name</th>
+            <th>Business Number</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Approval Status</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <!-- Businesses will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script src="/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     loadBusinesses();
@@ -129,6 +141,7 @@
               const tableBody = document.querySelector('#businessTable tbody');
               tableBody.innerHTML = '';
               businesses.forEach(business => {
+                const statusBadgeClass = getStatusBadgeClass(business.approvalStatus);
                 const row = `
                             <tr>
                                 <td>${business.id}</td>
@@ -136,11 +149,11 @@
                                 <td>${business.businessNumber}</td>
                                 <td>${business.businessAddress}</td>
                                 <td>${business.businessPhone}</td>
-                                <td>${business.approvalStatus}</td>
+                                <td><span class="badge badge-status ${statusBadgeClass}">${business.approvalStatus}</span></td>
                                 <td>
-                                    <button class="approve-btn" onclick="updateApprovalStatus(${business.id}, 'APPROVED')">Approve</button>
-                                    <button class="reject-btn" onclick="updateApprovalStatus(${business.id}, 'REJECTED')">Reject</button>
-                                    <button class="delete-btn" onclick="deleteBusiness(${business.id})">Delete</button>
+                                    <button class="btn btn-approve btn-sm" onclick="updateApprovalStatus(${business.id}, 'APPROVED')">Approve</button>
+                                    <button class="btn btn-reject btn-sm" onclick="updateApprovalStatus(${business.id}, 'REJECTED')">Reject</button>
+                                    <button class="btn btn-delete btn-sm" onclick="deleteBusiness(${business.id})">Delete</button>
                                 </td>
                             </tr>
                         `;
@@ -148,6 +161,15 @@
               });
             })
             .catch(error => console.error('Error:', error));
+  }
+
+  function getStatusBadgeClass(status) {
+    switch(status) {
+      case 'PENDING': return 'badge-pending';
+      case 'APPROVED': return 'badge-approved';
+      case 'REJECTED': return 'badge-rejected';
+      default: return '';
+    }
   }
 
   function updateApprovalStatus(businessId, status) {
@@ -160,7 +182,30 @@
     })
             .then(response => response.json())
             .then(data => {
-              alert(`Business ${businessId} ${status}`);
+              // 성공 알림 표시
+              const toastContainer = document.createElement('div');
+              toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+              toastContainer.style.zIndex = '11';
+
+              toastContainer.innerHTML = `
+              <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                      <div class="toast-body">
+                          Business ${businessId} status updated to ${status}
+                      </div>
+                      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+              </div>`;
+
+              document.body.appendChild(toastContainer);
+              const toastEl = toastContainer.querySelector('.toast');
+              const toastInstance = new bootstrap.Toast(toastEl);
+              toastInstance.show();
+
+              setTimeout(() => {
+                toastContainer.remove();
+              }, 5000);
+
               loadBusinesses();
             })
             .catch((error) => {
@@ -175,7 +220,30 @@
       })
               .then(response => response.json())
               .then(data => {
-                alert('Business deleted successfully');
+                // 성공 알림 표시
+                const toastContainer = document.createElement('div');
+                toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+                toastContainer.style.zIndex = '11';
+
+                toastContainer.innerHTML = `
+                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            Business deleted successfully
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>`;
+
+                document.body.appendChild(toastContainer);
+                const toastEl = toastContainer.querySelector('.toast');
+                const toastInstance = new bootstrap.Toast(toastEl);
+                toastInstance.show();
+
+                setTimeout(() => {
+                  toastContainer.remove();
+                }, 5000);
+
                 loadBusinesses();
               })
               .catch((error) => {

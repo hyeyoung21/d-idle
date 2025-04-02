@@ -102,17 +102,6 @@ public class ProductController {
         }
     }
 
-
-    @GetMapping("/most-sold")
-    public ResponseEntity<?> getMostSoldProduct() {
-        try {
-            Product mostSoldProduct = productService.getMostSoldProduct();
-            return ResponseEntity.ok(mostSoldProduct);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No products found");
-        }
-    }
-
     @GetMapping("/seller")
     public ResponseEntity<List<ProductDTO>> getSellerProducts(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -126,6 +115,22 @@ public class ProductController {
         }
 
         List<ProductDTO> products = productService.getProductsByBusinessId(business.getId());
+        return ResponseEntity.ok(products);
+    }
+
+    // 가장 많이 팔린 상품 조회
+    @GetMapping("/most-sold")
+    public ResponseEntity<ProductDTO> getMostSoldProduct() {
+        ProductDTO mostSoldProduct = productService.getMostSoldProduct();
+        return ResponseEntity.ok(mostSoldProduct);
+    }
+
+    // 특정 카테고리의 상위 N개 상품 조회
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductDTO>> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "3") int limit) {
+        List<ProductDTO> products = productService.getTopProductsByCategory(categoryId, limit);
         return ResponseEntity.ok(products);
     }
 
