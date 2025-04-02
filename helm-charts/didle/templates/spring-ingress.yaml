@@ -8,8 +8,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     external-dns.alpha.kubernetes.io/hostname: didle.shop,www.didle.shop
     alb.ingress.kubernetes.io/target-group-attributes: |
-      stickiness.enabled=true
-      stickiness.lb_cookie.duration_seconds=3600
+      stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
     alb.ingress.kubernetes.io/target-type: ip
   
 spec:
