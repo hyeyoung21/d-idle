@@ -94,4 +94,42 @@ public class UserController {
         }});
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        String username = (String) session.getAttribute("username");
+        User.UserType userType = (User.UserType) session.getAttribute("userType");
+
+        if (userId == null || username == null || userType == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "User not logged in"));
+        }
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("id", userId);
+        responseBody.put("username", username);
+        responseBody.put("userType", userType);
+
+        // 사용자 추가 정보 가져오기
+        User user = userService.getUserById(userId);
+        if (user != null) {
+            responseBody.put("email", user.getEmail());
+            responseBody.put("fullName", user.getFullName());
+            responseBody.put("phone", user.getPhone());
+            responseBody.put("address", user.getAddress());
+        }
+
+        // BUSINESS 유저 타입인 경우 비즈니스 정보 추가
+        if (User.UserType.BUSINESS.equals(userType)) {
+            Business business = businessService.getBusinessByUserId(userId);
+            if (business != null) {
+                responseBody.put("businessId", business.getId());
+                responseBody.put("businessName", business.getBusinessName());
+                responseBody.put("businessNumber", business.getBusinessNumber());
+                responseBody.put("businessAddress", business.getBusinessAddress());
+                responseBody.put("businessPhone", business.getBusinessPhone());
+            }
+        }
+
+        return ResponseEntity.ok(responseBody);
+    }
 }
