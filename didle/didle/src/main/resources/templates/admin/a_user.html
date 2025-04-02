@@ -4,96 +4,104 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/header.css">
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-      background-color: #f9f9f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
+    .card {
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+      margin-bottom: 30px;
     }
-
-    .container {
-      width: 80%;
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .card-header {
+      background-color: #9b2c2c;
+      color: white;
+      border-top-left-radius: 12px !important;
+      border-top-right-radius: 12px !important;
+      padding: 15px 20px;
     }
-
-    h2 {
-      color: #2c3e50;
+    .table {
+      margin-bottom: 0;
+    }
+    .table th, .table td {
       text-align: center;
-      margin-bottom: 1.5rem;
+      vertical-align: middle;
     }
-
-    /* User Table Styles */
-    #userTable {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    .table th {
+      font-weight: 600;
+      color: #495057;
     }
-
-    #userTable th, #userTable td {
-      padding: 1.2rem;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    #userTable th {
-      background-color: #3498db;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    #userTable tbody tr:hover {
-      background-color: #f9f9f9;
-    }
-
-    /* Delete Button */
-    .delete-btn {
-      padding: 0.6rem 1rem;
+    .btn-delete {
+      background-color: #9b2c2c;
+      color: white;
       border: none;
+      transition: all 0.3s;
+      padding: 6px 15px;
       border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      font-size: 0.9rem;
-      background-color: #e74c3c;
+    }
+    .btn-delete:hover {
+      background-color: #d46a6a;
       color: white;
     }
-
-    .delete-btn:hover {
-      background-color: #c0392b;
+    .page-title {
+      color: #9b2c2c;
+      margin-bottom: 25px;
+      margin-top: 30px;
+      font-weight: 600;
+    }
+    .badge-user-type {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .badge-admin {
+      background-color: #9b2c2c;
+      color: white;
+    }
+    .badge-business {
+      background-color: #6f42c1;
+      color: white;
+    }
+    .badge-customer {
+      background-color: #17a2b8;
+      color: white;
     }
   </style>
 </head>
 <body>
 <div th:replace="fragments/a_header :: a_header"></div>
 
-<div class="container">
-  <h2>User Management</h2>
+<div class="container my-5">
+  <h1 class="page-title text-center">User Management</h1>
 
-  <!-- User Table -->
-  <table id="userTable">
-    <thead>
-    <tr>
-      <th>ID</th>
-      <th>Username</th>
-      <th>Email</th>
-      <th>User Type</th>
-      <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- 사용자 데이터가 여기에 동적으로 추가됩니다 -->
-    </tbody>
-  </table>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">User List</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table id="userTable" class="table table-hover table-striped">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>User Type</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <!-- 사용자 데이터가 여기에 동적으로 추가됩니다 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script src="/js/main.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -107,18 +115,32 @@
               const tableBody = document.querySelector('#userTable tbody');
               tableBody.innerHTML = ''; // 기존 내용 초기화
               users.forEach(user => {
+                const badgeClass = getBadgeClass(user.userType);
                 const row = `
                     <tr>
                         <td>${user.id}</td>
                         <td>${user.username}</td>
                         <td>${user.email}</td>
-                        <td>${user.userType}</td>
-                        <td><button class="delete-btn" onclick="deleteUser(${user.id})">Delete</button></td>
+                        <td><span class="badge badge-user-type ${badgeClass}">${user.userType}</span></td>
+                        <td>
+                          <button class="btn btn-delete btn-sm" onclick="deleteUser(${user.id})">
+                            <i class="bi bi-trash"></i> Delete
+                          </button>
+                        </td>
                     </tr>`;
                 tableBody.innerHTML += row;
               });
             })
             .catch(error => console.error('Error loading users:', error));
+  }
+
+  function getBadgeClass(userType) {
+    switch(userType.toLowerCase()) {
+      case 'admin': return 'badge-admin';
+      case 'business': return 'badge-business';
+      case 'customer': return 'badge-customer';
+      default: return '';
+    }
   }
 
   function deleteUser(userId) {
@@ -127,7 +149,31 @@
     fetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
             .then(response => {
               if (!response.ok) throw new Error('Failed to delete user');
-              alert('User deleted successfully');
+
+              // 성공 알림 표시
+              const toastContainer = document.createElement('div');
+              toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+              toastContainer.style.zIndex = '11';
+
+              toastContainer.innerHTML = `
+              <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                      <div class="toast-body">
+                          User deleted successfully!
+                      </div>
+                      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+              </div>`;
+
+              document.body.appendChild(toastContainer);
+              const toastEl = toastContainer.querySelector('.toast');
+              const toastInstance = new bootstrap.Toast(toastEl);
+              toastInstance.show();
+
+              setTimeout(() => {
+                toastContainer.remove();
+              }, 5000);
+
               loadUsers(); // 목록 새로고침
             })
             .catch(error => console.error('Error deleting user:', error));
