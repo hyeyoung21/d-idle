@@ -7,12 +7,16 @@ import lombok.Setter;
 @Setter
 public class BusinessDTO {
     private Long id;
-    private Long userId; // 로그인한 사용자 ID
-    private String businessName; // 사업체 이름
-    private String businessNumber; // 사업자 등록 번호
-    private String businessAddress; // 사업체 주소
-    private String businessPhone; // 사업체 전화번호
+
+    // 로그인 정보 추가
+    private String username;
+    private String passwordHash;
+    private String email;
+
+    // 기존 필드 유지
+    private String businessName;
+    private String businessNumber;
+    private String businessAddress;
+    private String businessPhone;
     private String approvalStatus;
 }
-
-

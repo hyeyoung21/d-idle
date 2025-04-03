@@ -35,18 +35,11 @@
           <!-- Logged-in User -->
           <th:block th:if="${session.userId != null}">
             <span th:text="${session.username} + '님 환영합니다!'" class="me-3"></span>
-            <!-- Conditional Links for User Types -->
-            <th:block th:if="${session.userType.toString() == 'CUSTOMER'}">
-              <a href="/business-register" class="btn btn-outline-primary btn-sm">기업으로 회원가입</a>
-            </th:block>
-            <th:block th:if="${session.userType.toString() == 'BUSINESS'}">
-              <a href="/business" class="btn btn-outline-secondary btn-sm">기업 모드 전환</a>
-            </th:block>
             <th:block th:if="${session.userType.toString() == 'ADMIN'}">
               <a href="/admin" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
             </th:block>
             <!-- Logout Button -->
-            <button onclick="main()" class="btn btn-outline-dark btn-sm">Logout</button>
+            <button onclick="logout()" class="btn btn-outline-dark btn-sm">Logout</button>
           </th:block>
 
           <!-- Guest User -->

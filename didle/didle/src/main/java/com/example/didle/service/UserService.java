@@ -43,13 +43,6 @@ public class UserService {
         return null;
     }
 
-    public void changeUserType(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        user.setUserType(UserType.BUSINESS);
-        userRepository.save(user);
-    }
-
     // 모든 회원 조회
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();

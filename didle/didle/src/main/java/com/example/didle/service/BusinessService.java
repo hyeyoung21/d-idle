@@ -7,7 +7,6 @@ import com.example.didle.model.dto.OrderItemDTO;
 import com.example.didle.model.vo.Business;
 import com.example.didle.model.vo.BusinessApproval;
 import com.example.didle.model.vo.Order;
-import com.example.didle.model.vo.User;
 import com.example.didle.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.PageRequest;
@@ -21,29 +20,24 @@ import java.util.stream.Collectors;
 public class BusinessService {
 
     private final BusinessRepository businessRepository;
-    private final UserRepository userRepository;
     private final BusinessApprovalRepository approvalRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
-    public BusinessService(BusinessRepository businessRepository, UserRepository userRepository, BusinessApprovalRepository approvalRepository, OrderRepository orderRepository, ProductRepository productRepository) {
+    public BusinessService(BusinessRepository businessRepository, BusinessApprovalRepository approvalRepository, OrderRepository orderRepository, ProductRepository productRepository) {
         this.businessRepository = businessRepository;
-        this.userRepository = userRepository;
         this.approvalRepository = approvalRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
     }
 
+    // 비즈니스 생성 메서드 수정
     public Business createBusiness(BusinessDTO businessDTO) {
-
-        // 사용자 확인
-        User user = userRepository.findById(businessDTO.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
         // 비즈니스 엔티티 생성 및 저장
         Business business = new Business();
-
-        business.setUser(user);
+        business.setUsername(businessDTO.getUsername());
+        business.setPasswordHash(businessDTO.getPasswordHash()); // 실제로는 비밀번호 해싱 적용 필요
+        business.setEmail(businessDTO.getEmail());
         business.setBusinessName(businessDTO.getBusinessName());
         business.setBusinessNumber(businessDTO.getBusinessNumber());
         business.setBusinessAddress(businessDTO.getBusinessAddress());
@@ -53,25 +47,30 @@ public class BusinessService {
 
         // 승인 상태 생성 및 저장
         BusinessApproval approval = new BusinessApproval();
-
         approval.setBusiness(savedBusiness);
-
         approval.setStatus(BusinessApproval.ApprovalStatus.PENDING);
-
         approvalRepository.save(approval);
 
-        return savedBusiness; // 저장된 비즈니스 반환
+        return savedBusiness;
     }
 
-
-    public Business getBusinessByUserId(Long userId) {
-        System.out.println(userId);
-        return businessRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Business not found for user"));
+    // 비즈니스 인증 메서드 추가
+    public Business authenticateBusiness(String username, String password) {
+        Business business = businessRepository.findByUsername(username).orElse(null);
+        if (business != null && business.getPasswordHash().equals(password)) { // 실제로는 비밀번호 해싱 검증 필요
+            return business;
+        }
+        return null;
     }
 
-    public BusinessDTO updateBusiness(Long userId, BusinessDTO businessDTO) {
-        Business business = getBusinessByUserId(userId);
+    // getBusinessByUserId 메서드를 getBusinessById로 대체
+    public Business getBusinessById(Long businessId) {
+        return businessRepository.findById(businessId)
+                .orElseThrow(() -> new EntityNotFoundException("Business not found"));
+    }
+
+    public BusinessDTO updateBusiness(Long businessId, BusinessDTO businessDTO) {
+        Business business = getBusinessById(businessId);
 
         // Update business fields
         business.setBusinessName(businessDTO.getBusinessName());
@@ -94,12 +93,7 @@ public class BusinessService {
         return updatedDTO;
     }
 
-    public DashboardDTO getDashboardData(Long userId) {
-        Business business = businessRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Business not found for user ID: " + userId));
-
-        Long businessId = business.getId();
-
+    public DashboardDTO getDashboardData(Long businessId) {
         BigDecimal totalSales = orderRepository.sumTotalPriceByBusinessId(businessId);
         if (totalSales == null) totalSales = BigDecimal.ZERO;
 
@@ -111,9 +105,6 @@ public class BusinessService {
                         .stream().map(this::convertToOrderDTO).collect(Collectors.toList()))
                 .build();
     }
-
-
-
 
     private OrderDTO convertToOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO();
@@ -141,24 +132,6 @@ public class BusinessService {
 
         dto.setOrderItems(orderItemDTOs);
         return dto;
-    }
-
-    public BusinessDTO getBusinessDTOByUserId(Long userId) {
-        Business business = getBusinessByUserId(userId);
-        return convertToBusinessDTO(business);
-    }
-
-    private BusinessDTO convertToBusinessDTO(Business business) {
-        BusinessDTO businessDTO = new BusinessDTO();
-        businessDTO.setId(business.getId());
-        businessDTO.setBusinessName(business.getBusinessName());
-        businessDTO.setBusinessNumber(business.getBusinessNumber());
-        businessDTO.setBusinessAddress(business.getBusinessAddress());
-        businessDTO.setBusinessPhone(business.getBusinessPhone());
-        if (business.getApproval() != null) {
-            businessDTO.setApprovalStatus(business.getApproval().getStatus().toString());
-        }
-        return businessDTO;
     }
 
     public List<BusinessDTO> getAllBusinesses() {

@@ -25,8 +25,8 @@
 
 /* 챗봇 창 */
 .chatbot-window {
-    width: 350px;
-    height: 500px;
+    width: 400px;
+    height: 600px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
