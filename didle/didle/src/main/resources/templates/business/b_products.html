@@ -211,18 +211,9 @@
         const form = document.getElementById('edit-product-form');
         const formData = new FormData(form);
 
-        // FormData를 JSON 객체로 변환
-        const jsonData = {};
-        formData.forEach((value, key) => {
-            jsonData[key] = value;
-        });
-
         fetch(`/api/business/products/${currentProductId}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(jsonData)
+            body: formData // FormData를 직접 전송
         })
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -238,6 +229,7 @@
                 alert('Failed to update product. Please try again later.');
             });
     }
+
 
 
     function deleteProduct(productId) {
