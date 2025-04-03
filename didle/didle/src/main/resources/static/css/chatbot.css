@@ -9,17 +9,17 @@
 /* 토글 버튼 */
 .chatbot-toggle-btn {
     padding: 12px 24px;
-    background: #9b2c2c; /* 밝은 버건디 */
+    background: #4677EA; /* 파란색으로 변경 */
     color: white;
     border: none;
     border-radius: 25px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(155, 44, 44, 0.3); /* 버건디 그림자 */
+    box-shadow: 0 4px 15px rgba(70, 119, 234, 0.3); /* 파란색 그림자 */
     transition: all 0.3s ease;
 }
 
 .chatbot-toggle-btn:hover {
-    background: #d46a6a; /* 밝은 핑크 버건디 */
+    background: #6A92F2; /* 밝은 파란색으로 변경 */
     transform: translateY(-2px);
 }
 
@@ -41,7 +41,7 @@
 
 /* 헤더 */
 .chatbot-header {
-    background: linear-gradient(135deg, #9b2c2c, #d46a6a); /* 밝은 버건디 그라데이션 */
+    background: linear-gradient(135deg, #4677EA, #6A92F2); /* 파란색 그라데이션 */
     color: white;
     padding: 15px 20px;
     display: flex;

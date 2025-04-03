@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/header.css" rel="stylesheet">
     <link href="/css/chatbot.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
     <style>
         body {
             background-color: #f9f9f9;
@@ -26,7 +27,7 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            background-color: #fdf5e6; /* 부드러운 크림색 배경 */
+            background-color: #f7f7f7; /* 배경색 조정 */
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -47,7 +48,7 @@
 
         .featured-product h3 {
             font-size: 1.8rem;
-            color: #9b2c2c; /* 밝은 버건디 */
+            color: #4677EA; /* 제목 색상 변경 */
         }
 
         .featured-product p {
@@ -58,36 +59,36 @@
         .featured-product .price {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #e74c3c; /* 빨간색 가격 강조 */
+            color: #6A92F2; /* 가격 색상 변경 */
         }
 
         /* Category Section */
         .category-section h2 {
-            color: #9b2c2c; /* 밝은 버건디 */
+            color: #4677EA; /* 제목 색상 변경 */
             text-align: center;
             margin-bottom: 1rem;
         }
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 항상 3개의 칸으로 설정 */
-            gap: 1.5rem; /* 카드 간격 */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
         }
 
         .product-card {
-            background-color: #ffffff; /* 카드 배경 */
-            border-radius: 12px; /* 둥근 모서리 */
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             padding: 1rem;
-            text-align: center; /* 텍스트 가운데 정렬 */
-            min-height: 300px; /* 카드 높이 고정 */
+            text-align: center;
+            min-height: 300px;
         }
 
         .product-card img {
             width: 100%;
-            height: auto; /* 비율 유지 */
-            object-fit: cover; /* 이미지 크기 조정 */
-            border-radius: 12px; /* 이미지 둥근 모서리 */
+            height: auto;
+            object-fit: cover;
+            border-radius: 12px;
         }
 
         .product-card h3 {
@@ -100,9 +101,20 @@
         }
 
         .product-card:hover {
-            transform: translateY(-5px); /* 호버 시 살짝 올라감 */
-            transition: transform 0.3s ease-in-out; /* 부드러운 애니메이션 */
+            transform: translateY(-5px);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.2); /* 호버 시 그림자 강조 */
         }
+
+        /* 추가적인 스타일링 */
+        .featured-product {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #4677EA; /* 테두리 추가 */
+        }
+
+        .product-card:hover {
+            box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.2), inset 0 0 0 1px #4677EA; /* 호버 시 테두리 추가 */
+        }
+
 
     </style>
 </head>

@@ -179,4 +179,26 @@ public class BusinessController {
         }
     }
 
+    @PutMapping("/products/{productId}")
+    public ResponseEntity<?> updateProduct(@PathVariable Long productId,
+                                           @ModelAttribute ProductDTO productDTO,
+                                           @RequestParam(name = "image", required = false) MultipartFile image,
+                                           HttpSession session) {
+        Long businessId = (Long) session.getAttribute("businessId");
+        if (businessId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
+        try {
+            ProductDTO updatedProduct = productService.updateProduct(productId, productDTO, image, businessId);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product or business not found");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to process image: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update product: " + e.getMessage());
+        }
+    }
+
+
 }
