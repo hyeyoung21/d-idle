@@ -44,7 +44,7 @@ body {
 }
 
 .nav-link.active {
-    color: #ffffff; !important;
+    color: #ffffff !important;
     background-color: #6A92F2;
     font-weight: bold;
     border-radius: 5px;
