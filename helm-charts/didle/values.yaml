@@ -1,7 +1,7 @@
 replicaCount: 2
 image:
   repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-ecr
-  tag: a880a037daca50604598c2b484b557ebbc477c3a
+  tag: 3776798b8507cd7a3236f6c9e365952d319fb938
 service:
   type: ClusterIP
   port: 8080
