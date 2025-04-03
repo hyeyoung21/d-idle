@@ -179,8 +179,8 @@ public class BusinessController {
         }
     }
 
-    @PutMapping("/products/{productId}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long productId,
+    @PutMapping("/products/{currentProductId}")
+    public ResponseEntity<?> updateProduct(@PathVariable Long currentProductId,
                                            @ModelAttribute ProductDTO productDTO,
                                            @RequestParam(name = "image", required = false) MultipartFile image,
                                            HttpSession session) {
@@ -189,7 +189,7 @@ public class BusinessController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
         }
         try {
-            ProductDTO updatedProduct = productService.updateProduct(productId, productDTO, image, businessId);
+            ProductDTO updatedProduct = productService.updateProduct(currentProductId, productDTO, image, businessId);
             return ResponseEntity.ok(updatedProduct);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product or business not found");
