@@ -217,7 +217,7 @@
             jsonData[key] = value;
         });
 
-        fetch(`/api/business/${currentProductId}`, {
+        fetch(`/api/business/products/${currentProductId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
