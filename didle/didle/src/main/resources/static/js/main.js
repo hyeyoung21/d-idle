@@ -1,4 +1,4 @@
-function main() {
+function logout() {
     fetch('/api/users/logout', {
         method: 'POST',
         credentials: 'include' // 쿠키를 포함하여 요청을 보냄

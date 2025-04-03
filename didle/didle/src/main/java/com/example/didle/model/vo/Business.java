@@ -14,10 +14,17 @@ public class Business {
     @Column(name = "business_id")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    // 로그인 정보 추가
+    @Column(unique = true, nullable = false)
+    private String username;
 
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    // 기존 필드 유지
     @Column(name = "business_name", nullable = false)
     private String businessName;
 
@@ -41,4 +48,3 @@ public class Business {
         createdAt = LocalDateTime.now();
     }
 }
-

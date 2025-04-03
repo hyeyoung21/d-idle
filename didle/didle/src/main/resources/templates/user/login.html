@@ -94,6 +94,15 @@
     .form-footer a:hover {
       text-decoration: underline; /* 호버 시 밑줄 추가 */
     }
+
+    .radio-group {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .radio-group label {
+      margin: 0 1rem;
+    }
   </style>
 </head>
 <body>
@@ -102,10 +111,17 @@
 
 <!-- Wrapper for Login Form -->
 <div class="wrapper">
-
   <!-- Login Form -->
   <div class="container">
     <h1>Login to Didle</h1>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="loginType" value="user" checked> User
+      </label>
+      <label>
+        <input type="radio" name="loginType" value="business"> Business
+      </label>
+    </div>
     <form id="loginForm">
       <input type="text" id="username" placeholder="Username" required>
       <input type="password" id="passwordHash" placeholder="Password" required>
@@ -115,7 +131,6 @@
       <p>Don't have an account? <a href="/signup">Sign Up</a></p>
     </div>
   </div>
-
 </div>
 
 <!-- Bootstrap JS -->
@@ -125,29 +140,44 @@
   document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
+    const loginType = document.querySelector('input[name="loginType"]:checked').value;
     const loginData = {
       username: document.getElementById('username').value,
       passwordHash: document.getElementById('passwordHash').value
     };
 
-    fetch('/api/users/login', {
+    const apiUrl = loginType === 'user' ? '/api/users/login' : '/api/business/login';
+
+    fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(loginData)
     })
             .then(response => response.json())
             .then(data => {
-              if (data.userId) {
-                localStorage.setItem('userId', data.userId);
+              if (data.userId || data.businessId) {
+                localStorage.setItem('userId', data.userId || data.businessId);
                 localStorage.setItem('username', data.username);
-                alert('Login successful!');
-                window.location.href = '/';
+                localStorage.setItem('userType', loginType);
+
+                // 서버에서 반환된 userType 확인 (ADMIN인 경우 처리)
+                if (data.userType === 'ADMIN') {
+                  alert('Admin login successful!');
+                  window.location.href = '/admin';
+                } else if (loginType === 'user') {
+                  alert('Login successful!');
+                  window.location.href = '/';
+                } else {
+                  alert('Business login successful!');
+                  window.location.href = '/business';
+                }
               } else {
                 alert('Login failed. Please try again.');
               }
             })
             .catch(error => console.error('Error:', error));
   });
+
 </script>
 <script src="/js/main.js"></script>
 </body>

@@ -40,7 +40,10 @@
             transition: all 0.3s ease-in-out;
         }
 
-
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
     </style>
 
 </head>
@@ -51,6 +54,14 @@
         <div class="col-md-6">
             <h2 class="text-center text-danger mb-4">Business Profile</h2>
             <form id="business-profile-form" class="p-4 border rounded shadow-sm bg-white">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username:</label>
+                    <input type="text" id="username" name="username" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
                 <div class="mb-3">
                     <label for="businessName" class="form-label">Business Name:</label>
                     <input type="text" id="businessName" name="businessName" class="form-control" required>
@@ -96,6 +107,8 @@
                 return response.json();
             })
             .then(business => {
+                document.getElementById('username').value = business.username;
+                document.getElementById('email').value = business.email;
                 document.getElementById('businessName').value = business.businessName;
                 document.getElementById('businessNumber').value = business.businessNumber;
                 document.getElementById('businessAddress').value = business.businessAddress;
@@ -117,6 +130,7 @@
 
     function updateBusinessProfile() {
         const formData = {
+            email: document.getElementById('email').value,
             businessName: document.getElementById('businessName').value,
             businessNumber: document.getElementById('businessNumber').value,
             businessAddress: document.getElementById('businessAddress').value,

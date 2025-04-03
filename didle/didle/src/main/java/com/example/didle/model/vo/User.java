@@ -48,7 +48,7 @@ public class User {
     }
 
     public enum UserType {
-        CUSTOMER, BUSINESS, ADMIN
+        CUSTOMER, ADMIN
     }
 
 }

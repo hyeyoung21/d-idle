@@ -1,8 +1,6 @@
 package com.example.didle.controller.api;
 
-import com.example.didle.model.vo.Business;
 import com.example.didle.model.vo.User;
-import com.example.didle.service.BusinessService;
 import com.example.didle.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -17,11 +15,9 @@ import java.util.Map;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-    private final BusinessService businessService;
 
-    public UserController(UserService userService, BusinessService businessService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.businessService = businessService;
     }
 
     @GetMapping("/{id}")
@@ -34,7 +30,6 @@ public class UserController {
 
     @PostMapping
     public User createUser(@RequestBody User user) {
-        System.out.println(user);
         return userService.createUser(user);
     }
 
@@ -64,18 +59,6 @@ public class UserController {
             responseBody.put("userId", authenticatedUser.getId());
             responseBody.put("username", authenticatedUser.getUsername());
             responseBody.put("userType", authenticatedUser.getUserType());
-
-            // BUSINESS 유저 타입인 경우 비즈니스 정보 추가
-            if (User.UserType.BUSINESS.equals(authenticatedUser.getUserType())) {
-                Business business = businessService.getBusinessByUserId(authenticatedUser.getId());
-                if (business != null) {
-                    session.setAttribute("businessId", business.getId());
-                    session.setAttribute("businessName", business.getBusinessName());
-                    responseBody.put("businessId", business.getId());
-                    responseBody.put("businessName", business.getBusinessName());
-                }
-            }
-
             return ResponseEntity.ok(responseBody);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid username or password"));
@@ -116,18 +99,6 @@ public class UserController {
             responseBody.put("fullName", user.getFullName());
             responseBody.put("phone", user.getPhone());
             responseBody.put("address", user.getAddress());
-        }
-
-        // BUSINESS 유저 타입인 경우 비즈니스 정보 추가
-        if (User.UserType.BUSINESS.equals(userType)) {
-            Business business = businessService.getBusinessByUserId(userId);
-            if (business != null) {
-                responseBody.put("businessId", business.getId());
-                responseBody.put("businessName", business.getBusinessName());
-                responseBody.put("businessNumber", business.getBusinessNumber());
-                responseBody.put("businessAddress", business.getBusinessAddress());
-                responseBody.put("businessPhone", business.getBusinessPhone());
-            }
         }
 
         return ResponseEntity.ok(responseBody);

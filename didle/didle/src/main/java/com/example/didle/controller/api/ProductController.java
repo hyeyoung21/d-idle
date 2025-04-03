@@ -1,8 +1,7 @@
 package com.example.didle.controller.api;
 
-import com.example.didle.model.vo.Business;
-import com.example.didle.model.vo.Product;
 import com.example.didle.model.dto.ProductDTO;
+import com.example.didle.model.vo.Product;
 import com.example.didle.service.BusinessService;
 import com.example.didle.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
@@ -48,19 +47,14 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
+        Long businessId = (Long) session.getAttribute("businessId");
+        if (businessId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try {
-            Business business = businessService.getBusinessByUserId(userId);
-            if (business == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-
             Product existingProduct = productService.getProductById(id);
-            if (existingProduct == null || !existingProduct.getBusinessId().equals(business.getId())) {
+            if (existingProduct == null || !existingProduct.getBusinessId().equals(businessId)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
@@ -104,17 +98,12 @@ public class ProductController {
 
     @GetMapping("/seller")
     public ResponseEntity<List<ProductDTO>> getSellerProducts(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
+        Long businessId = (Long) session.getAttribute("businessId");
+        if (businessId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Business business = businessService.getBusinessByUserId(userId);
-        if (business == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        List<ProductDTO> products = productService.getProductsByBusinessId(business.getId());
+        List<ProductDTO> products = productService.getProductsByBusinessId(businessId);
         return ResponseEntity.ok(products);
     }
 

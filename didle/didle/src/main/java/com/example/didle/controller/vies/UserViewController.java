@@ -25,11 +25,6 @@ public class UserViewController {
         return "user/login";
     }
 
-    @GetMapping("/business-register")
-    public String showBusinessRegistrationForm() {
-        return "business/b_register";
-    }
-
     @GetMapping("/business")
     public String goToBusinessMain() {
         return "business/b_dashboard";
