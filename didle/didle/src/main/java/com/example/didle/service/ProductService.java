@@ -117,7 +117,6 @@ public class ProductService {
 
             // 3. 업로드된 파일의 URL 생성
             String newImageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, newFileName);
-
             // 4. Product 엔티티에 이미지 URL 설정
             product.setImageUrl(newImageUrl);
         }
@@ -190,35 +189,32 @@ public class ProductService {
         }
 
         // 이미지 처리
-//        if (image != null && !image.isEmpty()) {
-//            // 1. 고유한 파일 이름 생성
-//            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-//
-//            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
-//            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + bucketName);
-//
-//
-//            // 2. S3에 파일 업로드
-//            s3Client.putObject(
-//                    PutObjectRequest.builder()
-//                            .bucket(bucketName)
-//                            .key(fileName)
-//                            .build(),
-//                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
-//            );
-//
-//            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
-//
-//            // 3. 업로드된 파일의 URL 생성
-//            String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
-//
-//            // 4. Product 엔티티에 이미지 URL 설정
-//            product.setImageUrl(imageUrl);
-//        }
+        if (image != null && !image.isEmpty()) {
+            // 1. 고유한 파일 이름 생성
+            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + bucketName);
 
 
+            // 2. S3에 파일 업로드
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(fileName)
+                            .build(),
+                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
+            );
+
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
+
+            // 3. 업로드된 파일의 URL 생성
+            String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
+
+            // 4. Product 엔티티에 이미지 URL 설정
+            product.setImageUrl(imageUrl);
+        }
         Product savedProduct = productRepository.save(product);
-
         return convertToDTO(savedProduct);
     }
 

@@ -43,34 +43,6 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO, HttpSession session) {
-        Long businessId = (Long) session.getAttribute("businessId");
-        if (businessId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        try {
-            Product existingProduct = productService.getProductById(id);
-            if (existingProduct == null || !existingProduct.getBusinessId().equals(businessId)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-
-            // Update existing product with new data
-            existingProduct.setName(productDTO.getName());
-            existingProduct.setDescription(productDTO.getDescription());
-            existingProduct.setPrice(productDTO.getPrice());
-            existingProduct.setStockQuantity(productDTO.getStockQuantity());
-
-            Product updatedProduct = productService.updateProduct(existingProduct, productDTO.getCategoryId());
-            return ResponseEntity.ok(convertToDTO(updatedProduct));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
     private ProductDTO convertToDTO(Product product) {
         ProductDTO dto = new ProductDTO();
         dto.setId(product.getId());
@@ -83,8 +55,6 @@ public class ProductController {
         }
         return dto;
     }
-
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
