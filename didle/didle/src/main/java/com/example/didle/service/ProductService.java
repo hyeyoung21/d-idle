@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -70,14 +71,62 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Product updateProduct(Product product, Long categoryId) {
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
+    public ProductDTO updateProduct(Long productId, ProductDTO productDTO, MultipartFile image, Long businessId) throws IOException {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        if (!product.getBusinessId().equals(businessId)) {
+            throw new EntityNotFoundException("Product does not belong to this business");
+        }
+
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setStockQuantity(productDTO.getStockQuantity());
+
+        // 카테고리 설정
+        if (productDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productDTO.getCategoryId())
                     .orElseThrow(() -> new EntityNotFoundException("Category not found"));
             product.setCategory(category);
         }
-        return productRepository.save(product);
+
+        // 이미지 처리
+        if (image != null && !image.isEmpty()) {
+            // 기존 이미지 삭제 (필요시)
+            if (product.getImageUrl() != null) {
+                String[] parts = product.getImageUrl().split("/");
+                String fileName = parts[parts.length - 1];
+                s3Client.deleteObject(DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileName)
+                        .build());
+            }
+
+            // 1. 고유한 파일 이름 생성
+            String newFileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+
+            // 2. S3에 파일 업로드
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(newFileName)
+                            .build(),
+                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
+            );
+
+            // 3. 업로드된 파일의 URL 생성
+            String newImageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, newFileName);
+
+            // 4. Product 엔티티에 이미지 URL 설정
+            product.setImageUrl(newImageUrl);
+        }
+
+        productRepository.save(product);
+
+        return ProductDTO.fromEntity(product);
     }
+
 
     public List<ProductDTO> getProductsByBusinessId(Long businessId) {
         List<Product> products = productRepository.findByBusinessId(businessId);
@@ -141,31 +190,31 @@ public class ProductService {
         }
 
         // 이미지 처리
-        if (image != null && !image.isEmpty()) {
-            // 1. 고유한 파일 이름 생성
-            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
-
-            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
-            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + bucketName);
-
-
-            // 2. S3에 파일 업로드
-            s3Client.putObject(
-                    PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(fileName)
-                            .build(),
-                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
-            );
-
-            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
-
-            // 3. 업로드된 파일의 URL 생성
-            String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
-
-            // 4. Product 엔티티에 이미지 URL 설정
-            product.setImageUrl(imageUrl);
-        }
+//        if (image != null && !image.isEmpty()) {
+//            // 1. 고유한 파일 이름 생성
+//            String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+//
+//            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
+//            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + bucketName);
+//
+//
+//            // 2. S3에 파일 업로드
+//            s3Client.putObject(
+//                    PutObjectRequest.builder()
+//                            .bucket(bucketName)
+//                            .key(fileName)
+//                            .build(),
+//                    RequestBody.fromInputStream(image.getInputStream(), image.getSize())
+//            );
+//
+//            System.out.println("++++++++++++++++++++++++++++++++++++++++++" + s3Client.toString());
+//
+//            // 3. 업로드된 파일의 URL 생성
+//            String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, fileName);
+//
+//            // 4. Product 엔티티에 이미지 URL 설정
+//            product.setImageUrl(imageUrl);
+//        }
 
 
         Product savedProduct = productRepository.save(product);
