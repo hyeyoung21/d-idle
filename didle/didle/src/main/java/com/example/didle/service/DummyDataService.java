@@ -33,6 +33,7 @@ public class DummyDataService implements CommandLineRunner {
         insertAdminUser();
         insertBusinesses();
         insertUsers();
+        insertProducts();
     }
 
     private void insertCategories() {
@@ -77,7 +78,7 @@ public class DummyDataService implements CommandLineRunner {
     }
 
     private void insertUsers() {
-        if (userRepository.count() == 0) { // 유저 테이블에 데이터가 없는 경우만 실행
+        if (userRepository.count() == 1) { // 유저 테이블에 데이터가 없는 경우만 실행
 
             User user1 = new User();
             user1.setAddress("수원시");
@@ -161,7 +162,7 @@ public class DummyDataService implements CommandLineRunner {
         business.setBusinessPhone(phone);
 
         BusinessApproval approval = new BusinessApproval();
-        approval.setStatus(BusinessApproval.ApprovalStatus.PENDING);
+        approval.setStatus(BusinessApproval.ApprovalStatus.APPROVED);
         approval.setBusiness(business);
 
         business.setApproval(approval);
