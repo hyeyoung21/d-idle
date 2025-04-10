@@ -3,7 +3,7 @@ replicaCount: 2
 
 image:
   repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-ecr
-  tag: 2451c8f742cff49f180e9bb77519c706b387d560
+  tag: 653f4c3e804b7c663d03376af750c6b9159ce535
 
 service:
   type: ClusterIP
