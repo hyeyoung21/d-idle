@@ -17,4 +17,4 @@ spec:
   sessionAffinity: ClientIP
   sessionAffinityConfig:
     clientIP:
-      timeoutSeconds: 3600  # 세션 유지 시간 (기본값: 10800초 = 3시간)
+      timeoutSeconds: 3600

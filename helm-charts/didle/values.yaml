@@ -1,7 +1,10 @@
+
 replicaCount: 2
+
 image:
   repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-ecr
   tag: 90bdf2b432b066c6648a0aeb1911b415d53f242f
+
 service:
   type: ClusterIP
   port: 8080
@@ -25,7 +28,7 @@ ingress:
     external-dns.alpha.kubernetes.io/hostname: www.didle.shop
 
   hosts:
-    - host: www.didle.shop  # Route 53에 설정한 도메인으로 변경
+    - host: www.didle.shop
       paths:
         - path: /
           pathType: Prefix

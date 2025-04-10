@@ -1,6 +1,5 @@
 name: Deploy
 
-
 permissions:
   id-token: write
   deployments: write
@@ -24,7 +23,7 @@ env:
   ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
-  HELM_CHART_PATH: ./helm-charts/didle  # values.yaml 파일 경로
+  HELM_CHART_PATH: ./helm-charts/didle
   BUCKET_NAME: didle-service-data
 
 jobs:
@@ -47,17 +46,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
-      - name: Update kubeconfig
-        run: |
-          aws eks get-token --cluster-name ${{ env.EKS_CLUSTER }} > kubeconfig
-          export KUBECONFIG=./kubeconfig
 
       - name: Install ArgoCD CLI
         run: |
@@ -102,8 +90,8 @@ jobs:
             --helm-set aws.region=${{ env.AWS_REGION }} \
             --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
             --helm-set image.tag=$IMAGE_TAG \
-            --server ${{ env.ARGOCD_SERVER }}
+            --server ${{ secrets.ARGOCD_SERVER }}
 
-          argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
+          argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
 
 
