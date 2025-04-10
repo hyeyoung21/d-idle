@@ -187,9 +187,9 @@ public class DummyDataService implements CommandLineRunner {
                     createProduct(2L, "Office Chair", "Ergonomic office chair", new BigDecimal("120.00"), 12, "/img/Chair.webp", categories.get(1)),
                     createProduct(2L, "Bookshelf", "Spacious wooden bookshelf", new BigDecimal("200.00"), 8, "/img/Bookshelf.png", categories.get(1)),
 
-                    createProduct(3L, "Basketball", "Durable outdoor basketball", new BigDecimal("25.00"), 15, "/img/Basketball.webp", categories.get(2)),
+                    createProduct(3L, "Basketball", "Durable outdoor basketball", new BigDecimal("25.00"), 15, "/img/Basketball.jpg", categories.get(2)),
                     createProduct(3L, "Tennis Racket", "Lightweight tennis racket", new BigDecimal("75.00"), 20, "/img/Racket.webp", categories.get(2)),
-                    createProduct(3L, "Yoga Mat", "Non-slip yoga mat for workouts", new BigDecimal("30.00"), 25, "/img/Yoga.webp", categories.get(2))
+                    createProduct(3L, "Yoga Mat", "Non-slip yoga mat for workouts", new BigDecimal("30.00"), 25, "/img/Yoga.png", categories.get(2))
             );
 
 
