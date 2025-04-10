@@ -10,7 +10,7 @@ spec:
     path: helm-charts/didle
     helm:
       valueFiles:
-        - values.yaml  # 정확한 파일 명시
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default
