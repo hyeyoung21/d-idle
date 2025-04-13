@@ -102,4 +102,3 @@ jobs:
         with:                  # Level 3 (6 spaces) - 'uses'와 같은 레벨
           apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }} # Level 4 (8 spaces)
           was_image_tag: ${{ needs.build-and-push.outputs.was_tag }} # Level 4
-        secrets: inherit       # Level 3 (6 spaces) - 'uses', 'with'와 같은 레벨 !!!
