@@ -87,19 +87,6 @@ jobs:
           docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG backend/didle/didle
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
 
-      - name: Save image tag as artifact
-        run: |
-          echo "${{ github.sha }}" > apache_image_tag.txt
-          echo "${{ github.sha }}" > was_image_tag.txt
-
-      - name: Upload image tags as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: image_tags
-          path: |
-            apache_image_tag.txt
-            was_image_tag.txt
-
       - name: Update Helm chart
         run: |
           sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|'       $HELM_CHART_PATH/values.yaml

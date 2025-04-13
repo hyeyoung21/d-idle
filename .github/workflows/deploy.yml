@@ -68,18 +68,6 @@ jobs:
               --server ${{ env.ARGOCD_SERVER }}
           fi
 
-      - name: Download image tags artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image_tags
-
-      - name: Extract image tags
-        run: |
-          APACHE_IMAGE_TAG=$(cat apache_image_tag.txt)
-          WAS_IMAGE_TAG=$(cat was_image_tag.txt)
-          echo "APACHE_IMAGE_TAG=$APACHE_IMAGE_TAG" >> $GITHUB_ENV
-          echo "WAS_IMAGE_TAG=$WAS_IMAGE_TAG" >> $GITHUB_ENV
-
       - name: Set image tag and sync ArgoCD application
         run: |
           argocd app set didle-app \
@@ -87,8 +75,8 @@ jobs:
             --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --helm-set aws.region=${{ env.AWS_REGION }} \
             --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
-            --helm-set image.tag=$WAS_IMAGE_TAG \
-            --helm-set apache.image.tag=$APACHE_IMAGE_TAG \
+            --helm-set image.tag=$IMAGE_TAG \
+            --helm-set apache.image.tag=$IMAGE_TAG \
             --server ${{ secrets.ARGOCD_SERVER }}
 
           argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
