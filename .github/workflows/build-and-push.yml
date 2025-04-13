@@ -88,8 +88,9 @@ jobs:
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
 
       - name: Save image tag as artifact
-        run: echo "${{ github.sha }}" > apache_image_tag.txt
-        run: echo "${{ github.sha }}" > was_image_tag.txt
+        run: |
+          echo "${{ github.sha }}" > apache_image_tag.txt
+          echo "${{ github.sha }}" > was_image_tag.txt
 
       - name: Upload image tags as artifacts
         uses: actions/upload-artifact@v3
