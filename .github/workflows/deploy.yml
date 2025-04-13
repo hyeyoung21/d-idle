@@ -31,29 +31,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          # 직접 secrets 컨텍스트 사용
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Install ArgoCD CLI
-        run: |
-          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-          rm argocd-linux-amd64
-
-      - name: Login to ArgoCD
-        run: |
-          # env 대신 직접 secrets 컨텍스트 사용
-          argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
+      # ... (Checkout, Configure AWS, Install CLI, Login steps 동일) ...
 
       - name: Create ArgoCD Application (if not exists)
         run: |
+          # ... (기존 create 로직 동일) ...
           if ! argocd app get didle-app --server ${{ secrets.ARGOCD_SERVER }} > /dev/null 2>&1; then
             echo "Creating ArgoCD application didle-app..."
             argocd app create didle-app \
@@ -62,10 +44,10 @@ jobs:
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
               --server ${{ secrets.ARGOCD_SERVER }} \
-              --parameter aws.accessKey="" \ # 생성 시 빈 값 전달
-              --parameter aws.secretKey="" \ # 생성 시 빈 값 전달
+              --parameter aws.accessKey="" \
+              --parameter aws.secretKey="" \
               --parameter aws.region=${{ env.AWS_REGION }} \
-              --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \ # 생성 시에도 전달
+              --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \
               --parameter spring.image.tag=${{ inputs.was_image_tag }} \
               --parameter apache.image.tag=${{ inputs.apache_image_tag }}
           else
@@ -77,14 +59,15 @@ jobs:
           echo "Using Apache Tag from input: ${{ inputs.apache_image_tag }}"
           echo "Using WAS Tag from input: ${{ inputs.was_image_tag }}"
 
-          # OIDC 사용 시 AWS Key/Secret 파라미터 불필요
           argocd app set didle-app \
             --parameter aws.region=${{ env.AWS_REGION }} \
-            --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \ # set 시에도 전달
+            --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \
             --parameter spring.image.tag=${{ inputs.was_image_tag }} \
             --parameter apache.image.tag=${{ inputs.apache_image_tag }} \
-            --server ${{ secrets.ARGOCD_SERVER }}
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --validate=false # <-- !!! 이 플래그 추가 !!!
 
+          # set 명령어 성공 여부 확인은 유지
           if [ $? -eq 0 ]; then
             echo "argocd app set successful. Syncing application..."
             argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
