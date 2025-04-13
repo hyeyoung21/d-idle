@@ -37,12 +37,12 @@ jobs:
       - name: Extract image tags from values.yaml
         run: |
           # Apache 태그 추출 및 저장
-          APACHE_IMAGE_TAG=$(grep -A1 'apache:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | awk '{print $2}')
+          APACHE_IMAGE_TAG=$(grep -A3 '^apache:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | head -n 1 | awk '{print $2}')
           echo "Extracted APACHE_IMAGE_TAG: $APACHE_IMAGE_TAG"
           echo "APACHE_IMAGE_TAG=$APACHE_IMAGE_TAG" >> $GITHUB_ENV
 
           # WAS (기본 image) 태그 추출 및 저장
-          WAS_IMAGE_TAG=$(grep -A2 '^image:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | awk '{print $2}')
+          WAS_IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | sed -n '2p' | awk '{print $2}')
           echo "Extracted WAS_IMAGE_TAG: $WAS_IMAGE_TAG"
           echo "WAS_IMAGE_TAG=$WAS_IMAGE_TAG" >> $GITHUB_ENV
 
