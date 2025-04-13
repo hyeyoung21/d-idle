@@ -1,30 +1,24 @@
-# values.yaml
+# values.yaml 수정본
+
 replicaCount: 2
 
+# Apache 설정
 apache:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
     tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
   service:
     type: ClusterIP
     port: 80
 
-image:
-  repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-  tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
-
-service:
-  type: ClusterIP
-  port: 8080
-
-aws:
-  accessKey: ${AWS_ACCESS_KEY_ID}
-  secretKey: ${AWS_SECRET_ACCESS_KEY}
-  region: ${AWS_REGION}
-  bucketName: ${BUCKET_NAME}
-
-deployment:
-  enabled: true
+# Spring WAS 설정
+spring:
+  image:
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was
+    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+  service:
+    type: ClusterIP
+    port: 8080
 
 ingress:
   enabled: true
@@ -33,16 +27,28 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     external-dns.alpha.kubernetes.io/hostname: www.didle.shop
+    # ALB 인증서 ARN은 ingress annotation으로 관리하는 것이 일반적
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
   hosts:
     - host: www.didle.shop
       paths:
+        # 루트 경로는 Apache 서비스로
         - path: /
           pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-apache-service # 아파치 서비스 이름
+              port:
+                number: {{ .Values.apache.service.port }} # 아파치 포트 참조
+        # /api 경로는 Spring 서비스로
         - path: /api
           pathType: Prefix
           backend:
             service:
-              name: {{ .Release.Name }}-spring-service
+              name: {{ .Release.Name }}-spring-service # 스프링 서비스 이름
               port:
-                number: {{ .Values.service.port }}
-  albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
+                # 수정된 values.yaml 구조에 맞게 참조 변경
+                number: {{ .Values.spring.service.port }}
+
+# albCertArn은 ingress.annotations 안으로 이동
+# albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"

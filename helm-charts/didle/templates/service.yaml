@@ -1,3 +1,4 @@
+# service.yaml 수정본
 apiVersion: v1
 kind: Service
 metadata:
@@ -5,20 +6,23 @@ metadata:
 spec:
   type: {{ .Values.apache.service.type }}
   ports:
-  - port: {{ .Values.apache.service.port }}
-    targetPort: {{ .Values.apache.service.port }}
+    - port: {{ .Values.apache.service.port }}
+      targetPort: {{ .Values.apache.service.port }}
   selector:
     app: {{ .Release.Name }}-apache
 
+---
 
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-spring-service
 spec:
+  # 수정된 values.yaml 구조에 맞게 참조 변경
   type: {{ .Values.spring.service.type }}
   ports:
-  - port: {{ .Values.spring.service.port }}
-    targetPort: {{ .Values.spring.service.port }}
+    # 수정된 values.yaml 구조에 맞게 참조 변경
+    - port: {{ .Values.spring.service.port }}
+      targetPort: {{ .Values.spring.service.port }}
   selector:
     app: {{ .Release.Name }}-spring
