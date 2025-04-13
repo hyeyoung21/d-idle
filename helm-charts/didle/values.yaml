@@ -5,20 +5,32 @@ replicaCount: 2
 # Apache 설정
 apache:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-    tag: 85fa371b5e3bb1d9993a044c41898746f4fbfb8e
+    # 저장소 이름 명시! (예: didle-web)
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
+    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
   service:
     type: ClusterIP
     port: 80
 
-# Spring WAS 설정
+# Spring WAS 설정 (별도 키 'spring' 아래로 이동)
 spring:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-    tag: 85fa371b5e3bb1d9993a044c41898746f4fbfb8e
+    # 저장소 이름 명시! (예: didle-was)
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was
+    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
   service:
     type: ClusterIP
     port: 8080
+
+# AWS 관련 값 (CI/CD에서 --parameter로 덮어씀)
+aws:
+  accessKey: ""
+  secretKey: ""
+  region: "us-east-2" # 기본값 또는 빈값
+  bucketName: ""
+
+deployment:
+  enabled: true # 이 플래그가 실제로 사용되는지 확인 필요
 
 ingress:
   enabled: true
@@ -27,28 +39,24 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     external-dns.alpha.kubernetes.io/hostname: www.didle.shop
-    # ALB 인증서 ARN은 ingress annotation으로 관리하는 것이 일반적
+    # 인증서 ARN을 annotation으로 이동
     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
   hosts:
     - host: www.didle.shop
       paths:
-        # 루트 경로는 Apache 서비스로
+        # 루트 경로 -> Apache
         - path: /
           pathType: Prefix
           backend:
             service:
-              name: {{ .Release.Name }}-apache-service # 아파치 서비스 이름
+              name: {{ $.Release.Name }}-apache-service # $.Release 사용 권장
               port:
-                number: {{ .Values.apache.service.port }} # 아파치 포트 참조
-        # /api 경로는 Spring 서비스로
+                number: {{ .Values.apache.service.port }}
+        # /api 경로 -> Spring (backend 위치 수정)
         - path: /api
           pathType: Prefix
-          backend:
+          backend: # <- paths 배열 안으로 이동!
             service:
-              name: {{ .Release.Name }}-spring-service # 스프링 서비스 이름
+              name: {{ $.Release.Name }}-spring-service # $.Release 사용 권장
               port:
-                # 수정된 values.yaml 구조에 맞게 참조 변경
-                number: {{ .Values.spring.service.port }}
-
-# albCertArn은 ingress.annotations 안으로 이동
-# albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
+                number: {{ .Values.spring.service.port }} # spring 포트 참조

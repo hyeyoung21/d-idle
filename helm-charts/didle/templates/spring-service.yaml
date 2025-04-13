@@ -1,18 +1,3 @@
-# service.yaml 수정본
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Release.Name }}-apache-service
-spec:
-  type: {{ .Values.apache.service.type }}
-  ports:
-    - port: {{ .Values.apache.service.port }}
-      targetPort: {{ .Values.apache.service.port }}
-  selector:
-    app: {{ .Release.Name }}-apache
-
----
-
 apiVersion: v1
 kind: Service
 metadata:

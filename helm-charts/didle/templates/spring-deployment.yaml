@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-spring-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-spring
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-spring
+    spec:
+      containers:
+      - name: spring
+        # 수정된 values.yaml 구조 참조 (spring.image...)
+        image: {{ .Values.spring.image.repository }}:{{ .Values.spring.image.tag }}
+        ports:
+        # 수정된 values.yaml 구조 참조 (spring.service...)
+        - containerPort: {{ .Values.spring.service.port }}
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: {{ .Values.aws.accessKey | quote }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{ .Values.aws.secretKey | quote }}
+        - name: AWS_REGION
+          value: {{ .Values.aws.region | quote }}
+        - name: BUCKET_NAME
+          value: {{ .Values.aws.bucketName | quote }}
