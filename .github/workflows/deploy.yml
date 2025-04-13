@@ -20,12 +20,12 @@ on:
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: didle-eks-cluster
-  # env 에서는 이제 secrets 컨텍스트 대신 secrets 입력값 사용 불필요
-  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }} # 직접 secrets 컨텍스트 사용
+  # 이제 env에서 secrets를 참조할 필요 없이, 스텝에서 직접 secrets. 사용
+  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }} # 직접 secrets 컨텍스트 사용
+  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: ${{ secrets.BUCKET_NAME }} # 직접 secrets 컨텍스트 사용
+  BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
 
 jobs:
   deploy:
@@ -42,29 +42,30 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install ArgoCD CLI
-         run: |
-           curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-           rm argocd-linux-amd64
- 
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+          rm argocd-linux-amd64
+
       - name: Login to ArgoCD
-         run: |
-           argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
+        run: |
+          # env 대신 직접 secrets 컨텍스트 사용
+          argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
 
       - name: Create ArgoCD Application (if not exists)
         run: |
-          if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }} > /dev/null 2>&1; then
+          if ! argocd app get didle-app --server ${{ secrets.ARGOCD_SERVER }} > /dev/null 2>&1; then
             echo "Creating ArgoCD application didle-app..."
             argocd app create didle-app \
               --repo https://github.com/rhg4656/d-idle.git \
               --path ${{ env.HELM_CHART_PATH }} \
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
-              --server ${{ env.ARGOCD_SERVER }} \
-              --parameter aws.accessKey="" \
-              --parameter aws.secretKey="" \
+              --server ${{ secrets.ARGOCD_SERVER }} \
+              --parameter aws.accessKey="" \ # 생성 시 빈 값 전달
+              --parameter aws.secretKey="" \ # 생성 시 빈 값 전달
               --parameter aws.region=${{ env.AWS_REGION }} \
-              --parameter aws.bucketName=${{ env.BUCKET_NAME }} \
+              --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \ # 생성 시에도 전달
               --parameter spring.image.tag=${{ inputs.was_image_tag }} \
               --parameter apache.image.tag=${{ inputs.apache_image_tag }}
           else
@@ -76,18 +77,17 @@ jobs:
           echo "Using Apache Tag from input: ${{ inputs.apache_image_tag }}"
           echo "Using WAS Tag from input: ${{ inputs.was_image_tag }}"
 
-          # AWS Key/Secret은 configure-aws-credentials 로 설정되므로, --parameter 전달 불필요
-          # 또는 필요한 경우 명시적 secret 사용
+          # OIDC 사용 시 AWS Key/Secret 파라미터 불필요
           argocd app set didle-app \
             --parameter aws.region=${{ env.AWS_REGION }} \
-            --parameter aws.bucketName=${{ env.BUCKET_NAME }} \
+            --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \ # set 시에도 전달
             --parameter spring.image.tag=${{ inputs.was_image_tag }} \
             --parameter apache.image.tag=${{ inputs.apache_image_tag }} \
-            --server ${{ env.ARGOCD_SERVER }}
+            --server ${{ secrets.ARGOCD_SERVER }}
 
           if [ $? -eq 0 ]; then
             echo "argocd app set successful. Syncing application..."
-            argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
+            argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
           else
             echo "Error: argocd app set failed!"
             exit 1
