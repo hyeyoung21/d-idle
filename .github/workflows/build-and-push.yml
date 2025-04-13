@@ -61,7 +61,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/didle-web:$IMAGE_TAG web_static
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG web_static
           docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
 
       - name: Build with Gradle
@@ -71,7 +71,7 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           BUCKET_NAME: ${{ env.BUCKET_NAME }}
         run: |
-          cd backend/didle
+          cd backend/didle/didle
           chmod +x ./gradlew
           ./gradlew build \
             -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
@@ -84,7 +84,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG backend/didle
+          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG backend/didle/didle
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
 
       - name: Save image tag as artifact
