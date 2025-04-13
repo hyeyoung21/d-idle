@@ -1,13 +1,13 @@
-# build-and-push.yml 최종 수정본 (secrets 들여쓰기 수정)
+# build-and-push.yml 최종 수정본 (secrets 들여쓰기 재확인 및 수정)
 
 name: Build and Push
 
 permissions:
   id-token: write
   deployments: write
-  contents: read # checkout 위해 read 필요
+  contents: read
   statuses: write
-  actions: write # workflow_call 위해 필요
+  actions: write
   checks: read
   pull-requests: write
 
@@ -38,7 +38,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ... (다른 빌드 스텝들은 이전과 동일) ...
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -62,7 +61,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building Apache image with tag: $IMAGE_TAG"
-          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static # 경로 확인
           docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
           echo "apache_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
@@ -70,7 +69,7 @@ jobs:
         env:
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
         run: |
-          echo "Running Gradle build in $(pwd)/backend/didle/didle"
+          echo "Running Gradle build in $(pwd)/backend/didle/didle" # 경로 확인
           cd backend/didle/didle
           chmod +x ./gradlew
           ./gradlew build -PbucketName=$BUCKET_NAME
@@ -82,26 +81,25 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building WAS image with tag: $IMAGE_TAG"
-          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle
+          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle # 경로 확인
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
           echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
   # Deploy 워크플로우를 호출하는 Job
-  call-deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      deployments: write
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  call-deploy:                 # Level 0
+    needs: build-and-push      # Level 1 (2 spaces)
+    runs-on: ubuntu-latest     # Level 1
+    permissions:               # Level 1
+      id-token: write          # Level 2 (4 spaces)
+      deployments: write       # Level 2
+      contents: read           # Level 2
+    steps:                     # Level 1
+      - name: Checkout code    # Level 2 (dash + 2 spaces)
+        uses: actions/checkout@v4 # Level 3 (6 spaces)
 
-      - name: Call Deploy Workflow
-        uses: ./.github/workflows/deploy.yml
-        with:
-          apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
-          was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
-        # --- !!! secrets 들여쓰기 수정 !!! ---
-        secrets: inherit # 'uses', 'with'와 동일한 레벨
+      - name: Call Deploy Workflow # Level 2 (dash + 2 spaces)
+        uses: ./.github/workflows/deploy.yml # Level 3 (6 spaces)
+        with:                  # Level 3 (6 spaces) - 'uses'와 같은 레벨
+          apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }} # Level 4 (8 spaces)
+          was_image_tag: ${{ needs.build-and-push.outputs.was_tag }} # Level 4
+        secrets: inherit       # Level 3 (6 spaces) - 'uses', 'with'와 같은 레벨 !!!
