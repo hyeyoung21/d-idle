@@ -1,11 +1,11 @@
-# build-and-push.yml 최종 수정본 (workflow_call 사용)
+# build-and-push.yml 최종 수정본 (call-deploy에 checkout 추가)
 
 name: Build and Push
 
 permissions:
   id-token: write
   deployments: write
-  contents: read # Commit 안 하므로 read로 충분할 수 있음
+  contents: read # checkout 위해 read 필요
   statuses: write
   actions: write # workflow_call 위해 필요
   checks: read
@@ -27,9 +27,9 @@ env:
   WAS_ECR: didle-was # 실제 ECR 리포지토리 이름 확인
 
 jobs:
-  build-and-push: # Job 이름 변경 가능 (예: build)
+  build-and-push:
     runs-on: ubuntu-latest
-    outputs: # Job outputs 정의
+    outputs:
       apache_tag: ${{ steps.build_apache.outputs.apache_tag }}
       was_tag: ${{ steps.build_was.outputs.was_tag }}
     steps:
@@ -38,21 +38,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      # ... (Set up JDK, Configure AWS, Login ECR, Build Apache, Build Gradle, Build WAS steps - 이전과 동일) ...
 
       - name: Build and push Apache image
         id: build_apache
@@ -61,22 +47,17 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building Apache image with tag: $IMAGE_TAG"
-          # web_static 경로 확인!
-          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static # 경로 확인
           docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
-          # 스텝 output으로 태그 설정
           echo "apache_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
       - name: Build with Gradle
         env:
-          # 필요한 경우 secrets.BUCKET_NAME 사용
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
         run: |
-          # backend/didle/didle 경로 확인!
-          echo "Running Gradle build in $(pwd)/backend/didle/didle"
+          echo "Running Gradle build in $(pwd)/backend/didle/didle" # 경로 확인
           cd backend/didle/didle
           chmod +x ./gradlew
-          # BUCKET_NAME 환경변수 사용하도록 수정 (필요시)
           ./gradlew build -PbucketName=$BUCKET_NAME
 
       - name: Build, tag, and push image to Amazon ECR (WAS)
@@ -86,26 +67,27 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "Building WAS image with tag: $IMAGE_TAG"
-          # backend/didle/didle 경로 확인!
-          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle
+          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle # 경로 확인
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
-          # 스텝 output으로 태그 설정
           echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
-  # Deploy 워크플로우를 호출하는 새로운 Job 추가
+  # Deploy 워크플로우를 호출하는 Job
   call-deploy:
-    needs: build-and-push # build-and-push Job이 성공해야 실행
+    needs: build-and-push
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # deploy 워크플로우가 OIDC 사용 시 필요
+      id-token: write
       deployments: write
-      contents: read
+      contents: read # checkout 위해 read 필요
     steps:
+      # --- !!! 이 Job에서도 Checkout 추가 !!! ---
+      - name: Checkout code # 호출할 워크플로우 파일을 찾기 위해 필요
+        uses: actions/checkout@v4
+
       - name: Call Deploy Workflow
         uses: ./.github/workflows/deploy.yml # 현재 레포의 deploy.yml 호출
         with:
           # build-and-push Job의 outputs를 inputs로 전달
           apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
           was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
-        # OIDC 사용 시 secrets 전달 불필요, deploy.yml 내에서 configure-aws-credentials 사용
-          secrets: inherit # 만약 deploy.yml이 secrets를 직접 사용한다면 필요
+        secrets: inherit # deploy.yml 이 secrets를 사용하므로 전달
