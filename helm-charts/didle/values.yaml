@@ -5,12 +5,18 @@ replicaCount: 2
 # Apache 설정
 apache:
   image:
+<<<<<<< HEAD
     repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
     tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+=======
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: 964827d3a3eba6e9611ee55fcc011a9023b84706
+>>>>>>> 6c2cadc2162142a2235a4564be89954147350834
   service:
     type: ClusterIP
     port: 80
 
+<<<<<<< HEAD
 # Spring WAS 설정
 spring:
   image:
@@ -19,6 +25,24 @@ spring:
   service:
     type: ClusterIP
     port: 8080
+=======
+image:
+  repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+  tag: 964827d3a3eba6e9611ee55fcc011a9023b84706
+
+service:
+  type: ClusterIP
+  port: 8080
+
+aws:
+  accessKey: ${AWS_ACCESS_KEY_ID}
+  secretKey: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  bucketName: ${BUCKET_NAME}
+
+deployment:
+  enabled: true
+>>>>>>> 6c2cadc2162142a2235a4564be89954147350834
 
 ingress:
   enabled: true
