@@ -1,13 +1,13 @@
-# build-and-push.yml 최종 수정본
+# build-and-push.yml 최종 수정본 (workflow_call 사용)
 
 name: Build and Push
 
 permissions:
   id-token: write
   deployments: write
-  contents: write # commit step 제거 시 필요 없을 수 있음
+  contents: read # Commit 안 하므로 read로 충분할 수 있음
   statuses: write
-  actions: write
+  actions: write # workflow_call 위해 필요
   checks: read
   pull-requests: write
 
@@ -23,14 +23,17 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  WEB_ECR: didle-web # 실제 ECR 리포지토리 이름과 일치 확인
-  WAS_ECR: didle-was # 실제 ECR 리포지토리 이름과 일치 확인
+  WEB_ECR: didle-web # 실제 ECR 리포지토리 이름 확인
+  WAS_ECR: didle-was # 실제 ECR 리포지토리 이름 확인
 
 jobs:
-  build-and-push:
+  build-and-push: # Job 이름 변경 가능 (예: build)
     runs-on: ubuntu-latest
+    outputs: # Job outputs 정의
+      apache_tag: ${{ steps.build_apache.outputs.apache_tag }}
+      was_tag: ${{ steps.build_was.outputs.was_tag }}
     steps:
-      - name: Checkout merged code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -52,38 +55,57 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Apache image
-        id: build_apache # 스텝 ID 부여 (참조 시 필요할 수 있음)
+        id: build_apache
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          # github.sha 는 항상 최신 커밋 해시를 사용
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # web_static 폴더가 checkout된 루트에 있는지 확인!
-          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static # 컨텍스트 경로 명시
+          echo "Building Apache image with tag: $IMAGE_TAG"
+          # web_static 경로 확인!
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static
           docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
-          echo "apache_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT # 출력 변수 설정
+          # 스텝 output으로 태그 설정
+          echo "apache_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
       - name: Build with Gradle
         env:
-          # Gradle 빌드 시 필요한 AWS 자격 증명 (CI Runner에 이미 설정되어 있음)
-          # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # AWS_REGION: ${{ env.AWS_REGION }}
-          # BUCKET_NAME: ${{ env.BUCKET_NAME }} # 빌드 시 필요하다면 deploy env 사용
-          BUCKET_NAME: ${{ secrets.BUCKET_NAME || env.BUCKET_NAME }} # secret 우선 사용
+          # 필요한 경우 secrets.BUCKET_NAME 사용
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
         run: |
           # backend/didle/didle 경로 확인!
+          echo "Running Gradle build in $(pwd)/backend/didle/didle"
           cd backend/didle/didle
           chmod +x ./gradlew
-          ./gradlew build # 환경 변수로 전달되거나 application.properties 사용 권장
+          # BUCKET_NAME 환경변수 사용하도록 수정 (필요시)
+          ./gradlew build -PbucketName=$BUCKET_NAME
 
       - name: Build, tag, and push image to Amazon ECR (WAS)
-        id: build_was # 스텝 ID 부여
+        id: build_was
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          echo "Building WAS image with tag: $IMAGE_TAG"
           # backend/didle/didle 경로 확인!
-          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle # 컨텍스트 경로 명시
+          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
-          echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT # 출력 변수 설정
+          # 스텝 output으로 태그 설정
+          echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+  # Deploy 워크플로우를 호출하는 새로운 Job 추가
+  call-deploy:
+    needs: build-and-push # build-and-push Job이 성공해야 실행
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # deploy 워크플로우가 OIDC 사용 시 필요
+      deployments: write
+      contents: read
+    steps:
+      - name: Call Deploy Workflow
+        uses: ./.github/workflows/deploy.yml # 현재 레포의 deploy.yml 호출
+        with:
+          # build-and-push Job의 outputs를 inputs로 전달
+          apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
+          was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
+        # OIDC 사용 시 secrets 전달 불필요, deploy.yml 내에서 configure-aws-credentials 사용
+        # secrets: inherit # 만약 deploy.yml이 secrets를 직접 사용한다면 필요

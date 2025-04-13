@@ -1,57 +1,56 @@
+# deploy.yml 최종 수정본 (workflow_call 사용)
+
 name: Deploy
 
 permissions:
-  id-token: write
+  id-token: write # OIDC 사용
   deployments: write
-  contents: write
+  contents: read # Checkout 위해 필요
 
 on:
-  workflow_run:
-    workflows: ["Build and Push"]
-    types:
-      - completed
-
-  # workflow_call 은 현재 구조에서 사용되지 않는 것으로 보입니다.
-  # workflow_call:
-  #   inputs:
-  #     image_tag:
-  #       required: true
-  #       type: string
+  workflow_call: # 트리거 변경
+    inputs: # 입력 정의
+      apache_image_tag:
+        required: true
+        type: string
+      was_image_tag:
+        required: true
+        type: string
+    # secrets: # 만약 build-and-push 에서 secrets: inherit 를 사용한다면 필요
+    #   AWS_ACCOUNT_ID:
+    #     required: true
+    #   ARGOCD_SERVER:
+    #     required: true
+    #   ARGOCD_PASSWORD:
+    #     required: true
+    #   AWS_ACCESS_KEY_ID: # OIDC 사용 시 불필요
+    #     required: false
+    #   AWS_SECRET_ACCESS_KEY: # OIDC 사용 시 불필요
+    #     required: false
 
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: didle-eks-cluster
-  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }} # secrets 컨텍스트 직접 사용
   ARGOCD_USERNAME: admin
-  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
+  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }} # secrets 컨텍스트 직접 사용
   HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: didle-service-data
+  BUCKET_NAME: ${{ secrets.BUCKET_NAME }} # secret 사용 권장
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # if 조건 제거 (workflow_call 자체가 성공 시 호출됨)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract image tags from values.yaml
-        id: extract-image-tags # 스텝 ID 변경 고려
-        run: |
-          # Apache 태그 추출 및 저장
-          APACHE_IMAGE_TAG=$(grep -A3 '^apache:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | head -n 1 | awk '{print $2}')
-          echo "Extracted APACHE_IMAGE_TAG: $APACHE_IMAGE_TAG"
-          echo "APACHE_IMAGE_TAG=$APACHE_IMAGE_TAG" >> $GITHUB_ENV
-
-          # WAS (Spring) 태그 추출 (두 번째 tag 라인)
-          WAS_IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | sed -n '2p' | awk '{print $2}')
-          echo "Extracted WAS_IMAGE_TAG: $WAS_IMAGE_TAG"
-          echo "WAS_IMAGE_TAG=$WAS_IMAGE_TAG" >> $GITHUB_ENV
+      # --- Extract image tags from values.yaml 스텝 제거 ---
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role # secrets 사용
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install ArgoCD CLI
@@ -66,39 +65,44 @@ jobs:
 
       - name: Create ArgoCD Application (if not exists)
         run: |
-          # 애플리케이션이 없을 때만 생성
           if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }} > /dev/null 2>&1; then
             echo "Creating ArgoCD application didle-app..."
+            # 생성 시에도 초기 태그 전달 (선택 사항이지만 안정성 향상)
             argocd app create didle-app \
               --repo https://github.com/rhg4656/d-idle.git \
-              --path ./helm-charts/didle \
+              --path ${{ env.HELM_CHART_PATH }} \
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
-              --server ${{ secrets.ARGOCD_SERVER }}
+              --server ${{ env.ARGOCD_SERVER }} \
+              --parameter aws.accessKey="" \ # 빈 값 전달 (어차피 set에서 덮어씀)
+              --parameter aws.secretKey="" \ # 빈 값 전달
+              --parameter aws.region=${{ env.AWS_REGION }} \
+              --parameter aws.bucketName=${{ env.BUCKET_NAME }} \
+              --parameter spring.image.tag=${{ inputs.was_image_tag }} \ # 입력값 사용
+              --parameter apache.image.tag=${{ inputs.apache_image_tag }} # 입력값 사용
           else
             echo "ArgoCD application didle-app already exists."
           fi
 
       - name: Set image tags and sync ArgoCD application
         run: |
-          # 환경 변수가 제대로 설정되었는지 확인 (디버깅용)
-          echo "Using Apache Tag: ${{ env.APACHE_IMAGE_TAG }}"
-          echo "Using WAS Tag: ${{ env.WAS_IMAGE_TAG }}"
+          # 입력받은 태그 사용 확인
+          echo "Using Apache Tag from input: ${{ inputs.apache_image_tag }}"
+          echo "Using WAS Tag from input: ${{ inputs.was_image_tag }}"
 
-          # --parameter 사용 및 각 서비스에 맞는 태그 변수 사용
+          # --parameter 사용 및 inputs 컨텍스트 사용
           argocd app set didle-app \
-            --parameter aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --parameter aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --parameter aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID_DEPLOY || secrets.AWS_ACCESS_KEY_ID }} \ # deploy 단계용 secret 별도 사용 가능
+            --parameter aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY_DEPLOY || secrets.AWS_SECRET_ACCESS_KEY }} \
             --parameter aws.region=${{ env.AWS_REGION }} \
             --parameter aws.bucketName=${{ env.BUCKET_NAME }} \
-            --parameter spring.image.tag=${{ env.WAS_IMAGE_TAG }} \      # spring 태그 사용 확인
-            --parameter apache.image.tag=${{ env.APACHE_IMAGE_TAG }} \   # apache 태그 사용 확인
-            --server ${{ secrets.ARGOCD_SERVER }}
+            --parameter spring.image.tag=${{ inputs.was_image_tag }} \      # 입력값 사용
+            --parameter apache.image.tag=${{ inputs.apache_image_tag }} \   # 입력값 사용
+            --server ${{ env.ARGOCD_SERVER }}
 
-          # 에러 발생 시 sync 명령어가 실행되지 않도록 set 명령어 성공 여부 확인
           if [ $? -eq 0 ]; then
             echo "argocd app set successful. Syncing application..."
-            argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
+            argocd app sync didle-app --prune --server ${{ env.ARGOCD_SERVER }}
           else
             echo "Error: argocd app set failed!"
             exit 1
