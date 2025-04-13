@@ -94,6 +94,7 @@ jobs:
     with:                      # <-- 입력 전달 (uses와 같은 레벨)
       apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
       was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
+    secrets: inherit           # <-- 시크릿 전달 (uses와 같은 레벨)
     permissions:               # <-- 필요한 권한 정의 (uses와 같은 레벨)
       id-token: write
       deployments: write
