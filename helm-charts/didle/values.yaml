@@ -4,14 +4,14 @@ replicaCount: 2
 apache:
   image:
     repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-    tag: 72063e8d72a3588395892e74d1b860ece48bc3a3
+    tag: 6701c9305fe090bb3c1b04db5e15a547016d9308
   service:
     type: ClusterIP
     port: 80
 
 image:
   repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-  tag: 72063e8d72a3588395892e74d1b860ece48bc3a3
+  tag: 6701c9305fe090bb3c1b04db5e15a547016d9308
 
 service:
   type: ClusterIP
