@@ -11,11 +11,12 @@ on:
     types:
       - completed
 
-  workflow_call:
-    inputs:
-      image_tag:
-        required: true
-        type: string
+  # workflow_call 은 현재 구조에서 사용되지 않는 것으로 보입니다.
+  # workflow_call:
+  #   inputs:
+  #     image_tag:
+  #       required: true
+  #       type: string
 
 env:
   AWS_REGION: us-east-2
@@ -35,13 +36,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Extract image tags from values.yaml
+        id: extract-image-tags # 스텝 ID 변경 고려
         run: |
           # Apache 태그 추출 및 저장
           APACHE_IMAGE_TAG=$(grep -A3 '^apache:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | head -n 1 | awk '{print $2}')
           echo "Extracted APACHE_IMAGE_TAG: $APACHE_IMAGE_TAG"
           echo "APACHE_IMAGE_TAG=$APACHE_IMAGE_TAG" >> $GITHUB_ENV
 
-          # WAS (기본 image) 태그 추출 및 저장
+          # WAS (Spring) 태그 추출 (두 번째 tag 라인)
           WAS_IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | sed -n '2p' | awk '{print $2}')
           echo "Extracted WAS_IMAGE_TAG: $WAS_IMAGE_TAG"
           echo "WAS_IMAGE_TAG=$WAS_IMAGE_TAG" >> $GITHUB_ENV
@@ -64,13 +66,17 @@ jobs:
 
       - name: Create ArgoCD Application (if not exists)
         run: |
-          if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
+          # 애플리케이션이 없을 때만 생성
+          if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }} > /dev/null 2>&1; then
+            echo "Creating ArgoCD application didle-app..."
             argocd app create didle-app \
-              --repo https://github.com/D-idle/d-idle.git \
+              --repo https://github.com/rhg4656/d-idle.git \
               --path ./helm-charts/didle \
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
-              --server ${{ env.ARGOCD_SERVER }}
+              --server ${{ secrets.ARGOCD_SERVER }}
+          else
+            echo "ArgoCD application didle-app already exists."
           fi
 
       - name: Set image tags and sync ArgoCD application
@@ -79,16 +85,17 @@ jobs:
           echo "Using Apache Tag: ${{ env.APACHE_IMAGE_TAG }}"
           echo "Using WAS Tag: ${{ env.WAS_IMAGE_TAG }}"
 
+          # --parameter 사용 및 각 서비스에 맞는 태그 변수 사용
           argocd app set didle-app \
             --parameter aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --parameter aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --parameter aws.region=${{ env.AWS_REGION }} \
             --parameter aws.bucketName=${{ env.BUCKET_NAME }} \
-            --parameter image.tag=${{ env.WAS_IMAGE_TAG }} \         # <-- parameter 사용
-            --parameter apache.image.tag=${{ env.APACHE_IMAGE_TAG }} \ # <-- parameter 사용
+            --parameter spring.image.tag=${{ env.WAS_IMAGE_TAG }} \      # spring 태그 사용 확인
+            --parameter apache.image.tag=${{ env.APACHE_IMAGE_TAG }} \   # apache 태그 사용 확인
             --server ${{ secrets.ARGOCD_SERVER }}
 
-          # 에러 발생 시 sync 명령어가 실행되지 않도록 set 명령어 성공 여부 확인 (선택 사항이지만 권장)
+          # 에러 발생 시 sync 명령어가 실행되지 않도록 set 명령어 성공 여부 확인
           if [ $? -eq 0 ]; then
             echo "argocd app set successful. Syncing application..."
             argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
@@ -96,5 +103,3 @@ jobs:
             echo "Error: argocd app set failed!"
             exit 1
           fi
-
-
