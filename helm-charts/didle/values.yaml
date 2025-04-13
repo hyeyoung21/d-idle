@@ -6,8 +6,8 @@ replicaCount: 2
 apache:
   image:
     # 저장소 이름 명시! (예: didle-web)
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
-    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: de1ec1deca17110bdbb43b920c63a994a31f3978
   service:
     type: ClusterIP
     port: 80
@@ -16,8 +16,8 @@ apache:
 spring:
   image:
     # 저장소 이름 명시! (예: didle-was)
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was
-    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: de1ec1deca17110bdbb43b920c63a994a31f3978
   service:
     type: ClusterIP
     port: 8080
