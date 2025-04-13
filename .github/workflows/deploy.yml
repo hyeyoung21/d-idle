@@ -88,7 +88,7 @@ jobs:
             --helm-set aws.region=${{ env.AWS_REGION }} \
             --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
             --helm-set image.tag=$WAS_IMAGE_TAG \
-            --helm-set image.tag=$APACHE_IMAGE_TAG \
+            --helm-set apache.image.tag=$APACHE_IMAGE_TAG \
             --server ${{ secrets.ARGOCD_SERVER }}
 
           argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
