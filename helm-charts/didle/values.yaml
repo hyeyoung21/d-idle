@@ -5,8 +5,8 @@ replicaCount: 2
 # Apache 설정
 apache:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
-    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: 85fa371b5e3bb1d9993a044c41898746f4fbfb8e
   service:
     type: ClusterIP
     port: 80
@@ -14,8 +14,8 @@ apache:
 # Spring WAS 설정
 spring:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was
-    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: 85fa371b5e3bb1d9993a044c41898746f4fbfb8e
   service:
     type: ClusterIP
     port: 8080
