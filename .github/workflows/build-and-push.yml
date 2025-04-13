@@ -108,4 +108,4 @@ jobs:
           apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
           was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
         # OIDC 사용 시 secrets 전달 불필요, deploy.yml 내에서 configure-aws-credentials 사용
-        # secrets: inherit # 만약 deploy.yml이 secrets를 직접 사용한다면 필요
+          secrets: inherit # 만약 deploy.yml이 secrets를 직접 사용한다면 필요
