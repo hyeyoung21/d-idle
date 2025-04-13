@@ -47,7 +47,7 @@ jobs:
            sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
            rm argocd-linux-amd64
  
-       - name: Login to ArgoCD
+      - name: Login to ArgoCD
          run: |
            argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
 
