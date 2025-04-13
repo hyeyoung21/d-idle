@@ -34,12 +34,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract image tag from values.yaml
-        id: extract-image-tag
+      - name: Extract image tags from values.yaml
         run: |
-          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
-          echo "Extracted IMAGE_TAG: $IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          # Apache 태그 추출 및 저장
+          APACHE_IMAGE_TAG=$(grep -A1 'apache:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | awk '{print $2}')
+          echo "Extracted APACHE_IMAGE_TAG: $APACHE_IMAGE_TAG"
+          echo "APACHE_IMAGE_TAG=$APACHE_IMAGE_TAG" >> $GITHUB_ENV
+
+          # WAS (기본 image) 태그 추출 및 저장
+          WAS_IMAGE_TAG=$(grep -A2 '^image:' ${{ env.HELM_CHART_PATH }}/values.yaml | grep 'tag:' | awk '{print $2}')
+          echo "Extracted WAS_IMAGE_TAG: $WAS_IMAGE_TAG"
+          echo "WAS_IMAGE_TAG=$WAS_IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -68,15 +73,19 @@ jobs:
               --server ${{ env.ARGOCD_SERVER }}
           fi
 
-      - name: Set image tag and sync ArgoCD application
+      - name: Set image tags and sync ArgoCD application # 스텝 이름 변경 (선택 사항)
         run: |
+          # 환경 변수가 제대로 설정되었는지 확인 (디버깅용)
+          echo "Using Apache Tag: ${{ env.APACHE_IMAGE_TAG }}"
+          echo "Using WAS Tag: ${{ env.WAS_IMAGE_TAG }}"
+
           argocd app set didle-app \
             --helm-set aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --helm-set aws.region=${{ env.AWS_REGION }} \
             --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
-            --helm-set image.tag=$IMAGE_TAG \
-            --helm-set apache.image.tag=$IMAGE_TAG \
+            --helm-set image.tag=${{ env.WAS_IMAGE_TAG }} \         # WAS 태그 사용
+            --helm-set apache.image.tag=${{ env.APACHE_IMAGE_TAG }} \ # Apache 태그 사용
             --server ${{ secrets.ARGOCD_SERVER }}
 
           argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
