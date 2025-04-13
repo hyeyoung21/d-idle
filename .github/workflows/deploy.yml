@@ -39,7 +39,6 @@ jobs:
         run: |
           IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
           echo "Extracted IMAGE_TAG: $IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
