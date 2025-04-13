@@ -37,7 +37,7 @@ jobs:
       - name: Extract image tag from values.yaml
         id: extract-image-tag
         run: |
-          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
+          IMAGE_TAG=$(grep 'apache.image.tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
           echo "Extracted IMAGE_TAG: $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
