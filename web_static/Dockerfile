@@ -2,7 +2,7 @@
 FROM httpd:2.4
 
 # 2. 웹 코드가 저장된 폴더를 Apache의 문서 루트에 복사
-COPY web-static /usr/local/apache2/htdocs/
+COPY web_static /usr/local/apache2/htdocs/
 
 # 3. Apache 설정 파일을 수정하여 웹 코드를 제공하도록 설정
 # 필요에 따라 설정 파일을 수정할 수 있습니다
