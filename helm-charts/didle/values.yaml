@@ -1,4 +1,8 @@
-# values.yaml 최종 수정본
+aws:
+  accessKey: ${AWS_ACCESS_KEY_ID}
+  secretKey: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  bucketName: ${BUCKET_NAME}
 
 replicaCount: 2
 
