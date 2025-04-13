@@ -41,7 +41,15 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 
-      # ... (Install ArgoCD CLI, Login to ArgoCD steps - 동일) ...
+      - name: Install ArgoCD CLI
+         run: |
+           curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+           rm argocd-linux-amd64
+ 
+       - name: Login to ArgoCD
+         run: |
+           argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
 
       - name: Create ArgoCD Application (if not exists)
         run: |
