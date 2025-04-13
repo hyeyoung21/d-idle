@@ -4,16 +4,16 @@ replicaCount: 2
 
 apache:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web # 실제 저장소 이름 확인
-    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: e6ece0bfebbb5a549bbe7a2ac87c51363446b491
   service:
     type: ClusterIP
     port: 80
 
 spring:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was # 실제 저장소 이름 확인
-    tag: d543ea360c7b0e7cbf3efa896fe1f5ad1e694cbf
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
+    tag: e6ece0bfebbb5a549bbe7a2ac87c51363446b491
   service:
     type: ClusterIP
     port: 8080
