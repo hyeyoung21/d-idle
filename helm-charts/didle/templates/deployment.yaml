@@ -1,23 +1,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-deployment
+  name: {{ .Release.Name }}-apache-deployment
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: {{ .Release.Name }}-apache
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: {{ .Release.Name }}-apache
     spec:
       containers:
-      - name: {{ .Release.Name }}-container
+      - name: apache
+        image: {{ .Values.apache.image.repository }}:{{ .Values.apache.image.tag }}
+        ports:
+        - containerPort: {{ .Values.apache.service.port }}
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: {{ .Values.aws.accessKey | quote }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{ .Values.aws.secretKey | quote }}
+        - name: AWS_REGION
+          value: {{ .Values.aws.region | quote }}
+        - name: BUCKET_NAME
+          value: {{ .Values.aws.bucketName | quote }}
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-spring-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-spring
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-spring
+    spec:
+      containers:
+      - name: spring
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         ports:
         - containerPort: {{ .Values.service.port }}
-          name: http 
         env:
         - name: AWS_ACCESS_KEY_ID
           value: {{ .Values.aws.accessKey | quote }}

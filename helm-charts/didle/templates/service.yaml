@@ -1,20 +1,24 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-service
-
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: external
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
-
+  name: {{ .Release.Name }}-apache-service
 spec:
-  type: LoadBalancer
+  type: {{ .Values.apache.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.port }}
+  - port: {{ .Values.apache.service.port }}
+    targetPort: {{ .Values.apache.service.port }}
   selector:
-    app: {{ .Release.Name }}
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 3600
+    app: {{ .Release.Name }}-apache
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-spring-service
+spec:
+  type: {{ .Values.spring.service.type }}
+  ports:
+  - port: {{ .Values.spring.service.port }}
+    targetPort: {{ .Values.spring.service.port }}
+  selector:
+    app: {{ .Release.Name }}-spring

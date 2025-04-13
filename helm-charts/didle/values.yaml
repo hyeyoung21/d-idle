@@ -1,14 +1,21 @@
-
+# values.yaml
 replicaCount: 2
 
+apache:
+  image:
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 80
+
 image:
-  repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-ecr
+  repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was
   tag: dfdb4b6fec6c5d0d73310549c08762e223eda4fa
 
 service:
   type: ClusterIP
   port: 8080
-
 
 aws:
   accessKey: ${AWS_ACCESS_KEY_ID}
@@ -26,11 +33,16 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     external-dns.alpha.kubernetes.io/hostname: www.didle.shop
-
   hosts:
     - host: www.didle.shop
       paths:
         - path: /
           pathType: Prefix
-
-albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-spring-service
+              port:
+                number: {{ .Values.service.port }}
+  albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
