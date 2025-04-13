@@ -73,21 +73,28 @@ jobs:
               --server ${{ env.ARGOCD_SERVER }}
           fi
 
-      - name: Set image tags and sync ArgoCD application # 스텝 이름 변경 (선택 사항)
+      - name: Set image tags and sync ArgoCD application
         run: |
           # 환경 변수가 제대로 설정되었는지 확인 (디버깅용)
           echo "Using Apache Tag: ${{ env.APACHE_IMAGE_TAG }}"
           echo "Using WAS Tag: ${{ env.WAS_IMAGE_TAG }}"
 
           argocd app set didle-app \
-            --helm-set aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-            --helm-set aws.region=${{ env.AWS_REGION }} \
-            --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
-            --helm-set image.tag=${{ env.WAS_IMAGE_TAG }} \         # WAS 태그 사용
-            --helm-set apache.image.tag=${{ env.APACHE_IMAGE_TAG }} \ # Apache 태그 사용
+            --parameter aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --parameter aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --parameter aws.region=${{ env.AWS_REGION }} \
+            --parameter aws.bucketName=${{ env.BUCKET_NAME }} \
+            --parameter image.tag=${{ env.WAS_IMAGE_TAG }} \         # <-- parameter 사용
+            --parameter apache.image.tag=${{ env.APACHE_IMAGE_TAG }} \ # <-- parameter 사용
             --server ${{ secrets.ARGOCD_SERVER }}
 
-          argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
+          # 에러 발생 시 sync 명령어가 실행되지 않도록 set 명령어 성공 여부 확인 (선택 사항이지만 권장)
+          if [ $? -eq 0 ]; then
+            echo "argocd app set successful. Syncing application..."
+            argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
+          else
+            echo "Error: argocd app set failed!"
+            exit 1
+          fi
 
 
