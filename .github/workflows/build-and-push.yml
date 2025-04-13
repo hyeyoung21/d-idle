@@ -61,7 +61,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG web_static
           docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
 
       - name: Build with Gradle
