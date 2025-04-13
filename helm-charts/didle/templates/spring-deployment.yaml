@@ -1,3 +1,4 @@
+# templates/spring-deployment.yaml 최종 수정본
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,17 +15,19 @@ spec:
     spec:
       containers:
       - name: spring
-        # 수정된 values.yaml 구조 참조 (spring.image...)
         image: {{ .Values.spring.image.repository }}:{{ .Values.spring.image.tag }}
         ports:
-        # 수정된 values.yaml 구조 참조 (spring.service...)
         - containerPort: {{ .Values.spring.service.port }}
         env:
         - name: AWS_ACCESS_KEY_ID
-          value: {{ .Values.aws.accessKey | quote }}
+          # 값이 없거나 nil이면 빈 문자열("") 사용
+          value: {{ default "" .Values.aws.accessKey | quote }}
         - name: AWS_SECRET_ACCESS_KEY
-          value: {{ .Values.aws.secretKey | quote }}
+          # 값이 없거나 nil이면 빈 문자열("") 사용
+          value: {{ default "" .Values.aws.secretKey | quote }}
         - name: AWS_REGION
-          value: {{ .Values.aws.region | quote }}
+          # 값이 없거나 nil이면 "us-east-2" 사용 (기본값 지정)
+          value: {{ default "us-east-2" .Values.aws.region | quote }}
         - name: BUCKET_NAME
-          value: {{ .Values.aws.bucketName | quote }}
+          # 값이 없거나 nil이면 빈 문자열("") 사용
+          value: {{ default "" .Values.aws.bucketName | quote }}

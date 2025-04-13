@@ -1,9 +1,11 @@
+# build-and-push.yml 최종 수정본
+
 name: Build and Push
 
 permissions:
   id-token: write
   deployments: write
-  contents: write
+  contents: write # commit step 제거 시 필요 없을 수 있음
   statuses: write
   actions: write
   checks: read
@@ -13,31 +15,24 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'build and push'  
+        description: 'build and push'
         required: true
   push:
-    branches: 
+    branches:
       - main
 
 env:
   AWS_REGION: us-east-2
-  WEB_ECR: didle-web
-  WAS_ECR: didle-was
-  HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: didle-service-data
+  WEB_ECR: didle-web # 실제 ECR 리포지토리 이름과 일치 확인
+  WAS_ECR: didle-was # 실제 ECR 리포지토리 이름과 일치 확인
 
 jobs:
   build-and-push:
-#    if: |
-#      (github.repository == 'D-idle/d-idle' && github.ref == 'refs/heads/main') ||
-#      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout merged code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
 
       - name: Set up JDK 17
@@ -57,48 +52,38 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Apache image
+        id: build_apache # 스텝 ID 부여 (참조 시 필요할 수 있음)
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          # github.sha 는 항상 최신 커밋 해시를 사용
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG web_static
+          # web_static 폴더가 checkout된 루트에 있는지 확인!
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static # 컨텍스트 경로 명시
           docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
+          echo "apache_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT # 출력 변수 설정
 
       - name: Build with Gradle
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          BUCKET_NAME: ${{ env.BUCKET_NAME }}
+          # Gradle 빌드 시 필요한 AWS 자격 증명 (CI Runner에 이미 설정되어 있음)
+          # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # AWS_REGION: ${{ env.AWS_REGION }}
+          # BUCKET_NAME: ${{ env.BUCKET_NAME }} # 빌드 시 필요하다면 deploy env 사용
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME || env.BUCKET_NAME }} # secret 우선 사용
         run: |
+          # backend/didle/didle 경로 확인!
           cd backend/didle/didle
           chmod +x ./gradlew
-          ./gradlew build \
-            -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
-            -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY \
-            -Dspring.cloud.aws.region.static=$AWS_REGION \
-            -Dspring.s3.bucket=$BUCKET_NAME
+          ./gradlew build # 환경 변수로 전달되거나 application.properties 사용 권장
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Build, tag, and push image to Amazon ECR (WAS)
+        id: build_was # 스텝 ID 부여
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG backend/didle/didle
+          # backend/didle/didle 경로 확인!
+          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle # 컨텍스트 경로 명시
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
-
-      - name: Update Helm chart
-        run: |
-          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|'       $HELM_CHART_PATH/values.yaml
-          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/values.yaml
-          sed -i 's|repository:.*apache|repository: '${{ steps.login-ecr.outputs.registry }}'/didle-web|'       $HELM_CHART_PATH/values.yaml
-
-      - name: Commit and push if changed
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/values.yaml || exit 0
-          git commit -m "Update image tag" || exit 0
-          git push || exit 0
+          echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT # 출력 변수 설정

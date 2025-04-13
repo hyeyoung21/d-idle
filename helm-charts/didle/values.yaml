@@ -1,26 +1,31 @@
-aws:
-  accessKey: ${AWS_ACCESS_KEY_ID}
-  secretKey: ${AWS_SECRET_ACCESS_KEY}
-  region: ${AWS_REGION}
-  bucketName: ${BUCKET_NAME}
+# values.yaml 최종 확인본 (플레이스홀더 제거)
 
 replicaCount: 2
 
 apache:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-    tag: 21cf2ef7886c0915d4cba796ec5a8fe70b5f06b5
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web # 실제 이름 확인!
+    tag: placeholder-tag # build-and-push.yml에서 이 값 업데이트 X
   service:
     type: ClusterIP
     port: 80
 
 spring:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/
-    tag: 21cf2ef7886c0915d4cba796ec5a8fe70b5f06b5
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was # 실제 이름 확인!
+    tag: placeholder-tag # build-and-push.yml에서 이 값 업데이트 X
   service:
     type: ClusterIP
     port: 8080
+
+aws:
+  accessKey: "" # 기본값 (CI/CD에서 덮어씀)
+  secretKey: "" # 기본값 (CI/CD에서 덮어씀)
+  region: "us-east-2" # 기본값
+  bucketName: "" # 기본값 (CI/CD에서 덮어씀)
+
+deployment:
+  enabled: true # 실제로 사용하지 않으면 제거 고려
 
 ingress:
   enabled: true
@@ -33,9 +38,7 @@ ingress:
   hosts:
     - host: www.didle.shop
       paths:
-        # 루트 경로 -> Apache
         - path: /
           pathType: Prefix
-        # /api 경로 -> Spring
         - path: /api
           pathType: Prefix
