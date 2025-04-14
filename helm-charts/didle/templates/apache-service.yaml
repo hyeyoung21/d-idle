@@ -9,3 +9,4 @@ spec:
       targetPort: {{ .Values.apache.service.port }}
   selector:
     app: {{ .Release.Name }}-apache
+    
