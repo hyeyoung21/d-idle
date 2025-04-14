@@ -26,6 +26,9 @@ env:
 
 jobs:
   build-and-push:
+    if: |
+      (github.repository == 'D-idle/d-idle' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       apache_tag: ${{ steps.build_apache.outputs.apache_tag }}
