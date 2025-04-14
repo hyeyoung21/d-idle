@@ -1,18 +1,10 @@
 replicaCount: 2
 
 serviceAccount:
-  # true로 설정하면 Helm 차트가 Service Account를 생성합니다.
-  # false로 설정하면 기존 Service Account (아래 name으로 지정)를 사용합니다.
   create: true
-  # 사용할 Service Account의 이름입니다.
-  # create: true 이고 name이 비어있으면 차트 이름 기반으로 자동 생성됩니다.
-  # create: false 이면 여기에 기존 Service Account 이름을 지정해야 합니다.
-  name: ""
-  # Service Account에 추가할 어노테이션입니다. IRSA 설정이 여기에 들어갑니다!
-  annotations: {}
-  # 예시: 실제 IAM 역할 ARN으로 교체해야 합니다.
-  # annotations:
-  #   eks.amazonaws.com/role-arn: arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_S3_ACCESS_ROLE_NAME
+  name: "didle-app-sa" # 원하는 이름 지정 가능
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::116981805975:role/didle-eks-cluster-role
 
 apache:
   image:
