@@ -75,7 +75,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build -PbucketName=$BUCKET_NAME
 
-      - name: Build, tag, and push image to Amazon ECR (WAS)
+      - name: Build and push Spring image
         id: build_was
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}

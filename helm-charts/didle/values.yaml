@@ -30,9 +30,6 @@ aws:
   # bucketName은 애플리케이션에서 필요하므로 유지하거나 환경 변수로 전달합니다.
   bucketName: "didle-service-data" # 기본값을 여기서 설정하는 것이 좋습니다.
 
-# deployment: # 이 섹션은 현재 사용되지 않는 것 같으므로 제거해도 무방합니다.
-#  enabled: true
-
 ingress:
   enabled: true
   className: alb
