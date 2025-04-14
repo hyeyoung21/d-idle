@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Didle - Business Orders</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/header.css">
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="static/css/header.css">
+    <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
     <style>
         .card {
             border-radius: 12px;
@@ -100,7 +100,46 @@
     </style>
 </head>
 <body>
-<div th:replace="fragments/b_header :: b_header"></div>
+<header>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded">
+        <div class="container-fluid">
+            <!-- Brand 경로 수정 -->
+            <a class="navbar-brand d-flex align-items-center" href="b_dashboard.html"> <!-- 기본 비즈니스 페이지 경로 -->
+                <img src="static/img/logo.png" alt="Logo"> <!-- 로고 경로 수정 -->
+            </a>
+
+            <!-- Toggle button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible content -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Navigation Links 경로 수정 (.html 제거) -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" href="b_dashboard.html">대시보드</a></li>
+                    <li class="nav-item"><a class="nav-link" href="b_profile.html">비즈니스 정보</a></li>
+                    <li class="nav-item"><a class="nav-link" href="b_products.html">내 상품 관리</a></li>
+                    <li class="nav-item"><a class="nav-link" href="b_orders.html">주문 관리</a></li>
+                </ul>
+
+                <!-- Auth Section - JavaScript로 동적 제어 -->
+                <div id="auth-section-business" class="d-flex align-items-center auth-buttons">
+                    <!-- 로그인 상태 영역 (초기 숨김) - ID 변경 -->
+                    <div id="logged-in-business" style="display: none;" class="align-items-center">
+                        <span id="business-greeting" class="me-3"></span> <!-- ID 변경 -->
+                        <button onclick="logoutBusiness()" class="btn btn-outline-dark btn-sm">로그아웃</button> <!-- 함수 이름 변경 -->
+                    </div>
+                    <!-- 비로그인 상태 영역은 일반적으로 비즈니스 페이지에 필요 없음 (로그인 페이지로 리다이렉션) -->
+                    <!-- <div id="guest-business" style="display: block;">
+                        <a href="/business/login" class="btn btn-primary btn-sm">로그인</a>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
 <div class="container my-5">
     <h1 class="page-title text-center">주문 관리</h1>
 
@@ -130,7 +169,7 @@
     </div>
 </div>
 
-<script src="/js/main.js"></script>
+<script src="static/js/b_main.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
