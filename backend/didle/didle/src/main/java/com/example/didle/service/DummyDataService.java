@@ -179,17 +179,17 @@ public class DummyDataService implements CommandLineRunner {
             }
 
             List<Product> products = Arrays.asList(
-                    createProduct(1L, "Laptop", "High-performance laptop", new BigDecimal("1500.00"), 10, "/img/laptop.webp", categories.get(0)),
-                    createProduct(1L, "Smartphone", "Latest model smartphone", new BigDecimal("800.00"), 20, "/img/smartphone.webp", categories.get(0)),
-                    createProduct(1L, "Tablet", "Lightweight and powerful tablet", new BigDecimal("600.00"), 15, "/img/Tablet.webp", categories.get(0)),
+                    createProduct(1L, "Laptop", "High-performance laptop", new BigDecimal("1500.00"), 10, "./static/img/laptop.webp", categories.get(0)),
+                    createProduct(1L, "Smartphone", "Latest model smartphone", new BigDecimal("800.00"), 20, "./static/img/smartphone.webp", categories.get(0)),
+                    createProduct(1L, "Tablet", "Lightweight and powerful tablet", new BigDecimal("600.00"), 15, "./static/img/Tablet.webp", categories.get(0)),
 
-                    createProduct(2L, "Dining Table", "Elegant wooden dining table", new BigDecimal("300.00"), 5, "/img/Dining.webp", categories.get(1)),
-                    createProduct(2L, "Office Chair", "Ergonomic office chair", new BigDecimal("120.00"), 12, "/img/Chair.webp", categories.get(1)),
-                    createProduct(2L, "Bookshelf", "Spacious wooden bookshelf", new BigDecimal("200.00"), 8, "/img/Bookshelf.png", categories.get(1)),
+                    createProduct(2L, "Dining Table", "Elegant wooden dining table", new BigDecimal("300.00"), 5, "./static/img/Dining.webp", categories.get(1)),
+                    createProduct(2L, "Office Chair", "Ergonomic office chair", new BigDecimal("120.00"), 12, "./static/img/Chair.webp", categories.get(1)),
+                    createProduct(2L, "Bookshelf", "Spacious wooden bookshelf", new BigDecimal("200.00"), 8, "./static/img/Bookshelf.png", categories.get(1)),
 
-                    createProduct(3L, "Basketball", "Durable outdoor basketball", new BigDecimal("25.00"), 15, "/img/Basketball.jpg", categories.get(2)),
-                    createProduct(3L, "Tennis Racket", "Lightweight tennis racket", new BigDecimal("75.00"), 20, "/img/Racket.webp", categories.get(2)),
-                    createProduct(3L, "Yoga Mat", "Non-slip yoga mat for workouts", new BigDecimal("30.00"), 25, "/img/Yoga.png", categories.get(2))
+                    createProduct(3L, "Basketball", "Durable outdoor basketball", new BigDecimal("25.00"), 15, "./static/img/Basketball.jpg", categories.get(2)),
+                    createProduct(3L, "Tennis Racket", "Lightweight tennis racket", new BigDecimal("75.00"), 20, "./static/img/Racket.webp", categories.get(2)),
+                    createProduct(3L, "Yoga Mat", "Non-slip yoga mat for workouts", new BigDecimal("30.00"), 25, "./static/img/Yoga.png", categories.get(2))
             );
 
 

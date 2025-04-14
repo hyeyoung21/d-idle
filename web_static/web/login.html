@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +7,8 @@
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/header.css">
-  <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
-  <!-- Custom Styles -->
+  <link rel="stylesheet" href="static/css/header.css">
+  <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
   <style>
     /* Global Styles */
     body {
@@ -106,8 +105,51 @@
   </style>
 </head>
 <body>
-<!-- Header -->
-<div th:replace="fragments/header :: header"></div>
+<header>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid">
+      <!-- Brand 경로 확인 -->
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="./static/img/logo.png" alt="Logo"> <!-- 로고 경로 확인 -->
+      </a>
+
+      <!-- Toggle button for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Collapsible content -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Navigation Links 경로 확인 -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+          <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+        </ul>
+
+        <!-- Auth Section - JavaScript로 동적 제어 -->
+        <div id="auth-section" class="auth-buttons d-flex align-items-center">
+          <!-- 로그인 상태 영역 (초기 숨김) -->
+          <div id="logged-in-user" style="display: none;" class="d-flex align-items-center">
+            <span id="user-greeting" class="me-3"></span>
+            <div id="admin-link-container" style="display: none;">
+              <a href="a_user.html" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
+            </div>
+            <button onclick="logout()" class="btn btn-outline-dark btn-sm">Logout</button>
+          </div>
+
+          <!-- 비로그인 상태 영역 (초기 표시) -->
+          <div id="guest-user" style="display: block;">
+            <a href="login.html" class="btn btn-primary btn-sm">Login</a>
+            <a href="signup.html" class="btn btn-success btn-sm">Sign Up</a>
+          </div>
+        </div>
+      </div> <!-- End of collapsible content -->
+    </div> <!-- End of container-fluid -->
+  </nav> <!-- End of Navbar -->
+</header>
 
 <!-- Wrapper for Login Form -->
 <div class="wrapper">
@@ -128,7 +170,7 @@
       <button type="submit" class="w-100">Login</button>
     </form>
     <div class="form-footer">
-      <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+      <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
     </div>
   </div>
 </div>
@@ -210,6 +252,6 @@
   }
 
 </script>
-<script src="/js/main.js"></script>
+<script src="static/js/main.js"></script>
 </body>
 </html>

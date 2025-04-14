@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"> <!-- xmlns:th 제거 -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Didle - Home</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="./static/css/header.css" rel="stylesheet">
-    <link href="./static/css/chatbot.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <!-- CSS 경로 확인: Apache 서버 기준 상대/절대 경로 사용 -->
+    <link href="static/css/header.css" rel="stylesheet">
+    <link href="static/css/chatbot.css" rel="stylesheet">
+    <!-- Favicon 경로 확인 -->
+    <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
     <style>
         body {
             background-color: #f9f9f9;
@@ -115,14 +117,55 @@
         .product-card:hover {
             box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.2), inset 0 0 0 1px #4677EA; /* 호버 시 테두리 추가 */
         }
-
-
     </style>
 </head>
 <body>
-<!-- Include the header -->
-<div th:replace="fragments/header :: header"></div>
-<!--<div th:replace="fragments/chatbot :: chatbot"></div>-->
+<!-- 헤더: th:fragment 제거 -->
+<header>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <!-- Brand 경로 확인 -->
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="./static/img/logo.png" alt="Logo"> <!-- 로고 경로 확인 -->
+            </a>
+
+            <!-- Toggle button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible content -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Navigation Links 경로 확인 -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/products">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/cart">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/orders">Orders</a></li>
+                </ul>
+
+                <!-- Auth Section - JavaScript로 동적 제어 -->
+                <div id="auth-section" class="auth-buttons d-flex align-items-center">
+                    <!-- 로그인 상태 영역 (초기 숨김) -->
+                    <div id="logged-in-user" style="display: none;" class="d-flex align-items-center">
+                        <span id="user-greeting" class="me-3"></span>
+                        <div id="admin-link-container" style="display: none;">
+                            <a href="a_user.html" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
+                        </div>
+                        <button onclick="logout()" class="btn btn-outline-dark btn-sm">Logout</button>
+                    </div>
+
+                    <!-- 비로그인 상태 영역 (초기 표시) -->
+                    <div id="guest-user" style="display: block;">
+                        <a href="login.html" class="btn btn-primary btn-sm">Login</a>
+                        <a href="signup.html" class="btn btn-success btn-sm">Sign Up</a>
+                    </div>
+                </div>
+            </div> <!-- End of collapsible content -->
+        </div> <!-- End of container-fluid -->
+    </nav> <!-- End of Navbar -->
+</header>
 
 <div class="container">
     <!-- Best Seller Section -->
@@ -145,64 +188,82 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
-<script src="./static/js/main.js"></script>
-<script src="./static/js/chatbot.js"></script>
+<!-- JS 경로 확인 -->
+<script src="static/js/main.js"></script>
+<script src="static/js/chatbot.js"></script>
 
 <script>
+
+
+
+    // --- 기존 상품 정보 로드 로직 ---
     (async () => {
-        // Fetch and display the most sold product
+        // 인증 상태 업데이트 함수 호출
+        await updateAuthState();
+
+        // Fetch and display the most sold product (기존 코드 유지)
         fetch('/api/products/most-sold')
-            .then(response => response.json())
+            .then(response => response.ok ? response.json() : Promise.reject('Failed to load most sold'))
             .then(product => {
                 if (!product || !product.name) return;
-
                 const container = document.getElementById('featured-product');
+                // 이미지 경로 확인 필요 (API 응답에 포함된 경로가 웹에서 접근 가능한지)
                 container.innerHTML = `
                 <img src="${product.imageUrl}" alt="${product.name}">
                 <div class="product-info">
                     <h3>${product.name}</h3>
-                    <p>${product.description}</p>
+                    <p>${product.description || ''}</p>
                     <p class="price">Price: $${product.price}</p>
                 </div>
             `;
-            });
+            })
+            .catch(error => console.error('Error fetching most sold product:', error));
 
-        // Fetch and display category products
+        // Fetch and display category products (기존 코드 유지)
         const productsContainer = document.getElementById('category-products');
 
-        const categories = await fetch('/api/categories')
-            .then(res => res.json())
-            .catch(() => []);
+        try {
+            const categoriesResponse = await fetch('/api/categories');
+            if (!categoriesResponse.ok) throw new Error('Failed to load categories');
+            const categories = await categoriesResponse.json();
 
-        for (const category of categories.content) {
-            const products = await fetch(`/api/products/category/${category.id}?limit=3`)
-                .then(res => res.json())
-                .catch(() => []);
+            // categories.content 가 배열인지 확인 (API 응답 구조에 따라 다를 수 있음)
+            const categoryList = Array.isArray(categories.content) ? categories.content : [];
 
-            if (products.length === 0) continue;
+            for (const category of categoryList) {
+                try {
+                    const productsResponse = await fetch(`/api/products/category/${category.id}?limit=3`);
+                    if (!productsResponse.ok) continue; // 상품 로드 실패 시 해당 카테고리 건너뛰기
+                    const products = await productsResponse.json();
 
-            // 빈 카드 추가 로직
-            const emptyCards = Array(3 - products.length).fill(`
-            <div class="product-card"></div>
-        `).join('');
+                    if (!Array.isArray(products) || products.length === 0) continue;
 
-            const categoryHtml = `
-            <div class="mb-4">
-                <h2>${category.name}</h2>
-                <div class="product-grid">
-                    ${products.map(product => `
-                        <div class="product-card">
-                            <img src="${product.imageUrl}" alt="${product.name}">
-                            <h3>${product.name}</h3>
-                            <p>${product.description}</p>
-                            <p>$${product.price}</p>
+                    const emptyCardsNeeded = Math.max(0, 3 - products.length);
+                    const emptyCards = Array(emptyCardsNeeded).fill('<div class="product-card"></div>').join('');
+
+                    const categoryHtml = `
+                    <div class="mb-4">
+                        <h2>${category.name}</h2>
+                        <div class="product-grid">
+                            ${products.map(product => `
+                                <div class="product-card">
+                                    <img src="${product.imageUrl}" alt="${product.name}">
+                                    <h3>${product.name}</h3>
+                                    <p>${product.description || ''}</p>
+                                    <p>$${product.price}</p>
+                                </div>
+                            `).join('')}
+                            ${emptyCards}
                         </div>
-                    `).join('')}
-                    ${emptyCards} <!-- 부족한 공간을 채우는 빈 카드 -->
-                </div>
-            </div>`;
+                    </div>`;
 
-            productsContainer.insertAdjacentHTML('beforeend', categoryHtml);
+                    productsContainer.insertAdjacentHTML('beforeend', categoryHtml);
+                } catch (prodError) {
+                    console.error(`Error fetching products for category ${category.id}:`, prodError);
+                }
+            }
+        } catch (catError) {
+            console.error('Error fetching categories:', catError);
         }
     })();
 
