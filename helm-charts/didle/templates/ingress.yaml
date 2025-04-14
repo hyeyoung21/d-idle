@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: {{ index .Values.ingress.annotations "alb.ingress.kubernetes.io/scheme" }}
+    alb.ingress.kubernetes.io/target-type: {{ index .Values.ingress.annotations "alb.ingress.kubernetes.io/target-type" }}
+    external-dns.alpha.kubernetes.io/hostname: {{ index .Values.ingress.annotations "external-dns.alpha.kubernetes.io/hostname" }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ index .Values.ingress.annotations "alb.ingress.kubernetes.io/certificate-arn" }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ index .Values.ingress.hosts 0 "host" }}
+      http:
+        paths:
+          # 루트 경로 -> Apache
+          - path: {{ index .Values.ingress.hosts 0 "paths" 0 "path" }}
+            pathType: {{ index .Values.ingress.hosts 0 "paths" 0 "pathType" }}
+            backend:
+              service:
+                name: {{ $.Release.Name }}-apache-service # Correct reference
+                port:
+                  number: {{ .Values.apache.service.port }} # Correct reference
+          # /api 경로 -> Spring
+          - path: {{ index .Values.ingress.hosts 0 "paths" 1 "path" }}
+            pathType: {{ index .Values.ingress.hosts 0 "paths" 1 "pathType" }}
+            backend:
+              service:
+                name: {{ $.Release.Name }}-spring-service # Correct reference
+                port:
+                  number: {{ .Values.spring.service.port }} # Correct reference

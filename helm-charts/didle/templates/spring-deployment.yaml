@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-spring-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-spring
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-spring
+    spec:
+      containers:
+      - name: spring
+        image: {{ .Values.spring.image.repository }}:{{ .Values.spring.image.tag }}
+        ports:
+        - containerPort: {{ .Values.spring.service.port }}
+        env:
+        - name: AWS_REGION
+          # 값이 없거나 nil이면 "us-east-2" 사용 (기본값 지정)
+          value: {{ default "us-east-2" .Values.aws.region | quote }}
+        - name: BUCKET_NAME
+          # 값이 없거나 nil이면 빈 문자열("") 사용
+          value: {{ default "didle-service-data" .Values.aws.bucketName | quote }}

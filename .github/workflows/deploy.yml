@@ -1,45 +1,36 @@
 name: Deploy
 
 permissions:
-  id-token: write
+  id-token: write # OIDC 사용
   deployments: write
-  contents: write
+  contents: read # Checkout 위해 필요
 
 on:
-  workflow_run:
-    workflows: ["Build and Push"]
-    types:
-      - completed
-
   workflow_call:
     inputs:
-      image_tag:
+      apache_image_tag:
+        required: true
+        type: string
+      was_image_tag:
         required: true
         type: string
 
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: didle-eks-cluster
+
   ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
   HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: didle-service-data
+  BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Extract image tag from values.yaml
-        id: extract-image-tag
-        run: |
-          IMAGE_TAG=$(grep 'tag:' ${{ env.HELM_CHART_PATH }}/values.yaml | awk '{print $2}')
-          echo "Extracted IMAGE_TAG: $IMAGE_TAG"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -55,43 +46,48 @@ jobs:
 
       - name: Login to ArgoCD
         run: |
-          argocd login ${{ env.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ env.ARGOCD_PASSWORD }} --insecure
+          # env 대신 직접 secrets 컨텍스트 사용
+          argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ env.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }} --insecure
 
       - name: Create ArgoCD Application (if not exists)
         run: |
-          if ! argocd app get didle-app --server ${{ env.ARGOCD_SERVER }}; then
+          # ... (기존 create 로직 동일) ...
+          if ! argocd app get didle-app --server ${{ secrets.ARGOCD_SERVER }} > /dev/null 2>&1; then
+            echo "Creating ArgoCD application didle-app..."
             argocd app create didle-app \
               --repo https://github.com/D-idle/d-idle.git \
-              --path ./helm-charts/didle \
+              --path ${{ env.HELM_CHART_PATH }} \
               --dest-server https://kubernetes.default.svc \
               --dest-namespace default \
-              --server ${{ env.ARGOCD_SERVER }}
+              --server ${{ secrets.ARGOCD_SERVER }} \
+              --parameter aws.accessKey="" \
+              --parameter aws.secretKey="" \
+              --parameter aws.region=${{ env.AWS_REGION }} \
+              --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \
+              --parameter spring.image.tag=${{ inputs.was_image_tag }} \
+              --parameter apache.image.tag=${{ inputs.apache_image_tag }}
+          else
+            echo "ArgoCD application didle-app already exists."
           fi
 
-      - name: Verify values.yaml exists
+      - name: Set image tags and sync ArgoCD application
         run: |
-          if [ ! -f "${{ env.HELM_CHART_PATH }}/values.yaml" ]; then
-            echo "Error: values.yaml not found in ${{ env.HELM_CHART_PATH }}"
+          echo "Using Apache Tag from input: ${{ inputs.apache_image_tag }}"
+          echo "Using WAS Tag from input: ${{ inputs.was_image_tag }}"
+
+          argocd app set didle-app \
+            --parameter aws.region=${{ env.AWS_REGION }} \
+            --parameter aws.bucketName=${{ secrets.BUCKET_NAME }} \
+            --parameter spring.image.tag=${{ inputs.was_image_tag }} \
+            --parameter apache.image.tag=${{ inputs.apache_image_tag }} \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --validate=false # <-- !!! 이 플래그 추가 !!!
+
+          # set 명령어 성공 여부 확인은 유지
+          if [ $? -eq 0 ]; then
+            echo "argocd app set successful. Syncing application..."
+            argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
+          else
+            echo "Error: argocd app set failed!"
             exit 1
           fi
-    
-      - name: Verify environment variables
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-          echo "AWS_REGION=${{ env.AWS_REGION }}"
-          echo "BUCKET_NAME=${{ env.BUCKET_NAME }}"
-
-      - name: Set image tag and sync ArgoCD application
-        run: |
-          argocd app set didle-app \
-            --helm-set aws.accessKey=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --helm-set aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-            --helm-set aws.region=${{ env.AWS_REGION }} \
-            --helm-set aws.bucketName=${{ env.BUCKET_NAME }} \
-            --helm-set image.tag=$IMAGE_TAG \
-            --server ${{ secrets.ARGOCD_SERVER }}
-
-          argocd app sync didle-app --prune --server ${{ secrets.ARGOCD_SERVER }}
-
-

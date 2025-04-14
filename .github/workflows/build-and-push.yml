@@ -3,7 +3,7 @@ name: Build and Push
 permissions:
   id-token: write
   deployments: write
-  contents: write
+  contents: read
   statuses: write
   actions: write
   checks: read
@@ -13,17 +13,16 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'build and push'  
+        description: 'build and push'
         required: true
   push:
-    branches: 
+    branches:
       - main
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: didle-ecr
-  HELM_CHART_PATH: ./helm-charts/didle
-  BUCKET_NAME: didle-service-data
+  WEB_ECR: didle-web
+  WAS_ECR: didle-was
 
 jobs:
   build-and-push:
@@ -31,12 +30,13 @@ jobs:
       (github.repository == 'D-idle/d-idle' && github.ref == 'refs/heads/main') ||
       github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
+    outputs:
+      apache_tag: ${{ steps.build_apache.outputs.apache_tag }}
+      was_tag: ${{ steps.build_was.outputs.was_tag }}
     steps:
-      - name: Checkout merged code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
 
       - name: Set up JDK 17
@@ -55,43 +55,46 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build with Gradle
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          BUCKET_NAME: ${{ env.BUCKET_NAME }}
-        run: |
-          cd didle/didle
-          chmod +x ./gradlew
-          ./gradlew build \
-            -Dspring.cloud.aws.credentials.access-key=$AWS_ACCESS_KEY_ID \
-            -Dspring.cloud.aws.credentials.secret-key=$AWS_SECRET_ACCESS_KEY \
-            -Dspring.cloud.aws.region.static=$AWS_REGION \
-            -Dspring.s3.bucket=$BUCKET_NAME
-
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Build and push Apache image
+        id: build_apache
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG didle/didle
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "Building Apache image with tag: $IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG ./web_static # 경로 확인
+          docker push $ECR_REGISTRY/$WEB_ECR:$IMAGE_TAG
+          echo "apache_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
-      - name: Save image tag as artifact
-        run: echo "${{ github.sha }}" > image_tag.txt
-
-      - name: Update Helm chart
-        run: |
-          sed -i 's|repository:.*|repository: '${{ steps.login-ecr.outputs.registry }}'/'$ECR_REPOSITORY'|' $HELM_CHART_PATH/values.yaml
-          sed -i 's|tag:.*|tag: '${{ github.sha }}'|' $HELM_CHART_PATH/values.yaml
-
-      - name: Commit and push if changed
+      - name: Build with Gradle
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
         run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'github-actions@github.com'
-          git add $HELM_CHART_PATH/values.yaml || exit 0
-          git commit -m "Update image tag" || exit 0
-          git push || exit 0
+          echo "Running Gradle build in $(pwd)/backend/didle/didle" # 경로 확인
+          cd backend/didle/didle
+          chmod +x ./gradlew
+          ./gradlew build -PbucketName=$BUCKET_NAME
+
+      - name: Build, tag, and push image to Amazon ECR (WAS)
+        id: build_was
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "Building WAS image with tag: $IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG ./backend/didle/didle # 경로 확인
+          docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
+          echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+
+  # Deploy 워크플로우를 호출하는 Job - 수정된 구조!
+  call-deploy:
+    needs: build-and-push      # 이전 Job 의존성
+    uses: ./.github/workflows/deploy.yml
+    with:                      # <-- 입력 전달 (uses와 같은 레벨)
+      apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
+      was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
+    secrets: inherit           # <-- 시크릿 전달 (uses와 같은 레벨)
+    permissions:               # <-- 필요한 권한 정의 (uses와 같은 레벨)
+      id-token: write
+      deployments: write
+      contents: read

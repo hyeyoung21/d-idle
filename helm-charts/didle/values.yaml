@@ -1,23 +1,29 @@
-
 replicaCount: 2
 
-image:
-  repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-ecr
-  tag: dfdb4b6fec6c5d0d73310549c08762e223eda4fa
+apache:
+  image:
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web # 실제 이름 확인!
+    tag: placeholder-tag # build-and-push.yml에서 이 값 업데이트 X
+  service:
+    type: ClusterIP
+    port: 80
 
-service:
-  type: ClusterIP
-  port: 8080
-
+spring:
+  image:
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was # 실제 이름 확인!
+    tag: placeholder-tag # build-and-push.yml에서 이 값 업데이트 X
+  service:
+    type: ClusterIP
+    port: 8080
 
 aws:
-  accessKey: ${AWS_ACCESS_KEY_ID}
-  secretKey: ${AWS_SECRET_ACCESS_KEY}
-  region: ${AWS_REGION}
-  bucketName: ${BUCKET_NAME}
+  accessKey: "" # 기본값 (CI/CD에서 덮어씀)
+  secretKey: "" # 기본값 (CI/CD에서 덮어씀)
+  region: "us-east-2" # 기본값
+  bucketName: "" # 기본값 (CI/CD에서 덮어씀)
 
 deployment:
-  enabled: true
+  enabled: true # 실제로 사용하지 않으면 제거 고려
 
 ingress:
   enabled: true
@@ -26,11 +32,13 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     external-dns.alpha.kubernetes.io/hostname: www.didle.shop
-
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=86400
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
   hosts:
     - host: www.didle.shop
       paths:
         - path: /
           pathType: Prefix
-
-albCertArn: "arn:aws:acm:us-east-2:116981805975:certificate/108ee2b1-927d-4bc7-aee5-a81485952987"
+        - path: /api
+          pathType: Prefix

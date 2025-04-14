@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Didle - Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/header.css">
+    <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
+    <style>
+        .card {
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background-color: #4677EA; /* 헤더 배경색 변경 */
+            color: white;
+            border-top-left-radius: 12px !important;
+            border-top-right-radius: 12px !important;
+            padding: 15px 20px;
+        }
+
+        .page-title {
+            color: #4677EA; /* 제목 색상 변경 */
+            margin-bottom: 25px;
+            margin-top: 30px;
+            font-weight: 600;
+        }
+
+        .btn-signup {
+            background-color: #4677EA; /* 버튼 배경색 변경 */
+            color: white;
+            border: none;
+            transition: all 0.3s;
+            padding: 10px 25px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .btn-signup:hover {
+            background-color: #6A92F2; /* 호버 시 밝은 파란색 */
+            color: white;
+        }
+
+        .form-check-input:checked {
+            background-color: #4677EA; /* 체크박스 색상 변경 */
+            border-color: #4677EA;
+        }
+
+        .user-type-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+    </style>
+</head>
+<body>
+<header>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <!-- Brand 경로 확인 -->
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="./static/img/logo.png" alt="Logo"> <!-- 로고 경로 확인 -->
+            </a>
+
+            <!-- Toggle button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible content -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Navigation Links 경로 확인 -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+                </ul>
+
+                <!-- Auth Section - JavaScript로 동적 제어 -->
+                <div id="auth-section" class="auth-buttons d-flex align-items-center">
+                    <!-- 로그인 상태 영역 (초기 숨김) -->
+                    <div id="logged-in-user" style="display: none;" class="align-items-center">
+                        <span id="user-greeting" class="me-3"></span>
+                        <div id="admin-link-container" style="display: none;">
+                            <a href="a_user.html" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
+                        </div>
+                        <button onclick="logout()" class="btn btn-outline-dark btn-sm">Logout</button>
+                    </div>
+
+                    <!-- 비로그인 상태 영역 (초기 표시) -->
+                    <div id="guest-user" style="display: block;">
+                        <a href="login.html" class="btn btn-primary btn-sm">Login</a>
+                        <a href="signup.html" class="btn btn-success btn-sm">Sign Up</a>
+                    </div>
+                </div>
+            </div> <!-- End of collapsible content -->
+        </div> <!-- End of container-fluid -->
+    </nav> <!-- End of Navbar -->
+</header>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-8">
+            <h1 class="page-title text-center">Sign Up for Didle</h1>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Create an Account</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="user-type-selector mb-4">
+                        <h6 class="mb-3">Select Account Type:</h6>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="userType" id="userTypeUser" value="user"
+                                   checked>
+                            <label class="form-check-label" for="userTypeUser">User</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="userType" id="userTypeBusiness"
+                                   value="business">
+                            <label class="form-check-label" for="userTypeBusiness">Business</label>
+                        </div>
+                    </div>
+
+                    <!-- User Form -->
+                    <form id="userForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="passwordHash" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullName" name="fullName" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-signup">Sign Up</button>
+                        </div>
+                    </form>
+
+                    <!-- Business Form (Hidden by default) -->
+                    <form id="businessForm" class="needs-validation" novalidate style="display: none;">
+                        <div class="mb-3">
+                            <label for="businessUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="businessUsername" name="username" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="businessPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="businessPassword" name="passwordHash"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="businessEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="businessEmail" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="businessName" class="form-label">Business Name</label>
+                            <input type="text" class="form-control" id="businessName" name="businessName" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="businessNumber" class="form-label">Business Number</label>
+                            <input type="text" class="form-control" id="businessNumber" name="businessNumber" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="businessAddress" class="form-label">Business Address</label>
+                            <textarea class="form-control" id="businessAddress" name="businessAddress" rows="3"
+                                      required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="businessPhone" class="form-label">Business Phone</label>
+                            <input type="tel" class="form-control" id="businessPhone" name="businessPhone" required>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-signup">Register Business</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const userTypeRadios = document.querySelectorAll('input[name="userType"]');
+                const userForm = document.getElementById('userForm');
+                const businessForm = document.getElementById('businessForm');
+
+                // 라디오 버튼 변경 시 폼 전환
+                userTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', function () {
+                        if (this.value === 'user') {
+                            userForm.style.display = 'block';
+                            businessForm.style.display = 'none';
+                        } else {
+                            userForm.style.display = 'none';
+                            businessForm.style.display = 'block';
+                        }
+                    });
+                });
+
+                // 유저 폼 제출
+                userForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    if (!this.checkValidity()) {
+                        e.stopPropagation();
+                        this.classList.add('was-validated');
+                        return;
+                    }
+
+                    const formData = new FormData(this);
+                    const userData = {};
+                    formData.forEach((value, key) => {
+                        userData[key] = value;
+                    });
+
+                    fetch('/api/users', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('회원가입에 실패했습니다.');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                            window.location.href = 'login.html';
+                        })
+                        .catch(error => {
+                            alert(error.message);
+                        });
+                });
+
+                // 비즈니스 폼 제출
+                businessForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    if (!this.checkValidity()) {
+                        e.stopPropagation();
+                        this.classList.add('was-validated');
+                        return;
+                    }
+
+                    const formData = new FormData(this);
+                    const businessData = {};
+                    formData.forEach((value, key) => {
+                        businessData[key] = value;
+                    });
+
+                    fetch('/api/business/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(businessData)
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    throw new Error(text)
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert('기업 회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                            window.location.href = 'login.html';
+                        })
+                        .catch(error => {
+                            alert('회원가입 실패: ' + error.message);
+                        });
+                });
+            });
+        </script>
+        <script src="static/js/main.js"></script>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
