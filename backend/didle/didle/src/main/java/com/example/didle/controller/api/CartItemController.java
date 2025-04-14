@@ -30,20 +30,10 @@ public class CartItemController {
         return new ResponseEntity<>(addedItem, HttpStatus.CREATED);
     }
 
-    @GetMapping("/user")
+    @GetMapping("/my")
     public ResponseEntity<List<CartItemDTO>> getCartItemsByUser(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        List<CartItemDTO> cartItems = cartItemService.getCartItemsByUserId(userId);
-        return ResponseEntity.ok(cartItems);
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CartItemDTO>> getCartItems(@PathVariable Long userId, HttpSession session) {
-        Long sessionUserId = (Long) session.getAttribute("userId");
-        if (sessionUserId == null || !sessionUserId.equals(userId)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         List<CartItemDTO> cartItems = cartItemService.getCartItemsByUserId(userId);
