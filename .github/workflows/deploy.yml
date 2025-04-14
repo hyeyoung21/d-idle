@@ -1,5 +1,3 @@
-# deploy.yml 최종 수정본 (secrets 정의 추가)
-
 name: Deploy
 
 permissions:
@@ -20,7 +18,7 @@ on:
 env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: didle-eks-cluster
-  # 이제 env에서 secrets를 참조할 필요 없이, 스텝에서 직접 secrets. 사용
+
   ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
@@ -37,7 +35,6 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          # 직접 secrets 컨텍스트 사용
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/didle-cicd-deploy-role
           aws-region: ${{ env.AWS_REGION }}
 

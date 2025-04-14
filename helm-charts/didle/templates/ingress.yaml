@@ -1,4 +1,3 @@
-# templates/ingress.yaml (이전 수정본 유지)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

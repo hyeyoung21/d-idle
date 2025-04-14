@@ -3,10 +3,8 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-spring-service
 spec:
-  # 수정된 values.yaml 구조에 맞게 참조 변경
   type: {{ .Values.spring.service.type }}
   ports:
-    # 수정된 values.yaml 구조에 맞게 참조 변경
     - port: {{ .Values.spring.service.port }}
       targetPort: {{ .Values.spring.service.port }}
   selector:

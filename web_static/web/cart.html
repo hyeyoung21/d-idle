@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Didle - Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/header.css">
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="static/css/header.css">
+    <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
     <style>
         .checkout-btn {
             background-color: #4677EA; /* 버튼 배경색 변경 */
@@ -38,8 +38,51 @@
     </style>
 </head>
 <body>
-<!-- Header -->
-<div th:replace="fragments/header :: header"></div>
+<header>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <!-- Brand 경로 확인 -->
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="./static/img/logo.png" alt="Logo"> <!-- 로고 경로 확인 -->
+            </a>
+
+            <!-- Toggle button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible content -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Navigation Links 경로 확인 -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+                </ul>
+
+                <!-- Auth Section - JavaScript로 동적 제어 -->
+                <div id="auth-section" class="auth-buttons d-flex align-items-center">
+                    <!-- 로그인 상태 영역 (초기 숨김) -->
+                    <div id="logged-in-user" style="display: none;" class="align-items-center">
+                        <span id="user-greeting" class="me-3"></span>
+                        <div id="admin-link-container" style="display: none;">
+                            <a href="a_user.html" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
+                        </div>
+                        <button onclick="logout()" class="btn btn-outline-dark btn-sm">Logout</button>
+                    </div>
+
+                    <!-- 비로그인 상태 영역 (초기 표시) -->
+                    <div id="guest-user" style="display: block;">
+                        <a href="login.html" class="btn btn-primary btn-sm">Login</a>
+                        <a href="signup.html" class="btn btn-success btn-sm">Sign Up</a>
+                    </div>
+                </div>
+            </div> <!-- End of collapsible content -->
+        </div> <!-- End of container-fluid -->
+    </nav> <!-- End of Navbar -->
+</header>
 
 <div class="container">
     <h2 class="mt-4">Your Cart</h2>
@@ -52,126 +95,217 @@
     <button class="checkout-btn w-100 mt-3" onclick="checkout()">Checkout</button>
 </div>
 
-<script th:inline="javascript">
-    let cartItems = [];
+<script src="static/js/main.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let cartItems = []; // 장바구니 아이템 목록을 저장할 전역 변수
 
-    function loadCartItems() {
-        const userId = /*[[${session.userId}]]*/ null; // 사용자 ID 가져오기
-        if (userId) {
-            fetch(`/api/cart/user`)
-                .then(response => response.json())
-                .then(items => {
-                    cartItems = items;
+    // --- 장바구니 아이템 로드 함수 (수정됨) ---
+    async function loadCartItems() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const totalContainer = document.getElementById('total');
+        cartItemsContainer.innerHTML = '<p class="text-center text-muted mt-4">장바구니를 불러오는 중...</p>'; // 로딩 표시
+        totalContainer.innerHTML = ''; // 총액 초기화
 
-                    const cartItemsContainer = document.getElementById('cart-items');
-                    let total = 0;
+        try {
+            // 1. 로그인 상태 확인 (main.js의 함수 활용 또는 직접 fetch)
+            let isLoggedIn = false;
+            if (typeof updateAuthState === 'function') {
+                // updateAuthState가 상태를 반환하도록 수정했거나, 여기서 직접 확인
+                const authResponse = await fetch('/api/users/me');
+                isLoggedIn = authResponse.ok;
+            } else {
+                const authResponse = await fetch('/api/users/me');
+                isLoggedIn = authResponse.ok;
+                console.warn('updateAuthState 함수를 찾을 수 없습니다. 직접 인증 상태를 확인합니다.');
+            }
 
-                    cartItemsContainer.innerHTML = ''; // 이전 항목 제거
+            if (!isLoggedIn) {
+                alert('장바구니를 보려면 로그인해주세요.');
+                window.location.href = '/login'; // 로그인 페이지 경로 수정
+                return; // 함수 종료
+            }
 
-                    items.forEach(item => {
-                        const price = parseFloat(item.price) || 0; // 가격이 숫자가 아니면 0으로 처리
-                        const quantity = parseInt(item.quantity, 10) || 0; // 수량이 숫자가 아니면 0으로 처리
+            // 2. 로그인된 사용자의 장바구니 아이템 가져오기
+            // 백엔드에 GET /api/cart/my 엔드포인트 필요!
+            const response = await fetch('/api/cart/my'); // 현재 사용자 장바구니 API 호출
+            if (!response.ok) {
+                throw new Error(`HTTP 오류! 상태: ${response.status}`);
+            }
+            const items = await response.json();
+            cartItems = items; // 전역 변수에 저장
 
-                        const itemElement = document.createElement('div');
-                        itemElement.className = 'card mb-3 shadow-sm'; // Bootstrap 카드 스타일 추가
-                        itemElement.innerHTML = `
-                            <div class="row g-0">
-                                <div class="col-md-4">
-                                    <img src="${item.imageUrl}" alt="${item.productName}" class="img-fluid rounded-start img">
+            cartItemsContainer.innerHTML = ''; // 로딩 메시지 제거
+
+            if (!Array.isArray(items) || items.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-center text-primary mt-4">장바구니가 비어있습니다!</p>';
+                totalContainer.innerHTML = ''; // 총액 없음
+                return;
+            }
+
+            let total = 0;
+            items.forEach(item => {
+                // API 응답 데이터 유효성 검사 및 기본값 설정
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity, 10) || 1;
+                const imageUrl = item.imageUrl || '/img/placeholder.png'; // 기본 이미지
+                const productName = item.productName || '상품명 없음';
+                const cartItemId = item.id; // API 응답 키 확인 필요
+                const productId = item.productId; // API 응답 키 확인 필요
+
+                const itemElement = document.createElement('div');
+                itemElement.className = 'card mb-3 shadow-sm';
+                itemElement.innerHTML = `
+                    <div class="row g-0">
+                        <div class="col-md-3 d-flex align-items-center justify-content-center p-2">
+                            <img src="${imageUrl}" alt="${productName}" class="img-fluid rounded-start img">
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body">
+                                <h5 class="card-title">${productName}</h5>
+                                <p class="card-text mb-1"><small class="text-muted">개당 가격: ₩${price.toLocaleString()}</small></p> <!-- 통화 형식 변경 -->
+                                <div class="d-flex align-items-center mb-2">
+                                    <label for="quantity-${cartItemId}" class="form-label me-2 mb-0">수량:</label>
+                                    <input type="number" id="quantity-${cartItemId}" value="${quantity}" min="1" max="10" class="form-control d-inline" onchange="updateItemTotal(${cartItemId}, ${price})">
                                 </div>
-                                <div class="col-md-8">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${item.productName}</h5>
-                                        <p class="card-text">Price per unit: $${price.toFixed(2)}</p>
-                                        <p class="card-text">
-                                            Quantity:
-                                            <input type="number" id="quantity-${item.id}" value="${quantity}" min="1" max="10" class="form-control w-25 d-inline" onchange="updateItemTotal(${item.id}, ${price})">
-                                        </p>
-                                        <p id="total-price-${item.id}" class="card-text text-primary fw-bold">Total Price: $${(price * quantity).toFixed(2)}</p>
-                                        <button onclick="removeFromCart(${item.id})" class="btn btn-outline-primary btn-sm">Remove</button>
-                                    </div>
-                                </div>
+                                <p id="total-price-${cartItemId}" class="card-text fw-bold mb-2">합계: ₩${(price * quantity).toLocaleString()}</p> <!-- 통화 형식 변경 -->
+                                <button onclick="removeFromCart(${cartItemId})" class="btn btn-outline-danger btn-sm">삭제</button>
                             </div>
-                        `;
-                        cartItemsContainer.appendChild(itemElement);
+                        </div>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(itemElement);
 
-                        total += price * quantity; // 총합 계산
-                    });
+                total += price * quantity; // 총액 계산
+            });
 
+            // 총액 표시
+            totalContainer.innerHTML = `총 주문 금액: ₩${total.toLocaleString()}`; // 통화 형식 변경
 
-                    document.getElementById('total').innerHTML = `Total Price of Cart Items: $${total.toFixed(2)}`;
-
-
-                    document.getElementById('total').innerHTML = `Total Price of Cart Items: $${total.toFixed(2)}`;
-                })
-                .catch(error => console.error('Error:', error));
-        } else {
-            alert('Please login to view your cart');
-            window.location.href = '/login';
+        } catch (error) {
+            console.error('장바구니 로딩 오류:', error);
+            cartItemsContainer.innerHTML = `<p class="text-center text-danger mt-4">장바구니를 불러오는데 실패했습니다. ${error.message}</p>`;
         }
     }
 
-    function removeFromCart(cartItemId) {
-        fetch(`/api/cart/${cartItemId}`, { method : 'DELETE' })
-            .then(() => location.reload())
-            .catch(console.error)
+    // --- 장바구니에서 삭제 함수 (오류 처리 추가) ---
+    async function removeFromCart(cartItemId) {
+        // 백엔드 API는 세션 쿠키로 사용자를 식별하므로 별도 인증 확인 불필요
+        if (!confirm('이 상품을 장바구니에서 삭제하시겠습니까?')) {
+            return;
+        }
+        try {
+            const response = await fetch(`/api/cart/${cartItemId}`, { method: 'DELETE' });
+            if (!response.ok) {
+                throw new Error(`삭제 실패: ${response.statusText}`);
+            }
+            loadCartItems(); // 삭제 후 장바구니 목록 다시 로드
+        } catch (error) {
+            console.error('삭제 오류:', error);
+            alert(`오류: ${error.message}`);
+        }
     }
 
-    function checkout() {
+    // --- 결제 함수 (오류 처리 추가) ---
+    async function checkout() {
+        // 백엔드 API는 세션 쿠키로 사용자를 식별
         const productQuantities = {};
+        let hasItems = false;
         cartItems.forEach(item => {
-            const quantity = document.getElementById(`quantity-${item.id}`).value;
-            productQuantities[item.productId] = parseInt(quantity, 10);
+            const quantityInput = document.getElementById(`quantity-${item.id}`);
+            if (quantityInput) {
+                const quantity = parseInt(quantityInput.value, 10);
+                if (quantity > 0) {
+                    // 백엔드는 productId와 quantity가 필요함 (API 응답 키 확인 필요)
+                    productQuantities[item.productId] = quantity;
+                    hasItems = true;
+                }
+            }
         });
 
-        fetch('/api/cart/checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(productQuantities)
-        })
-            .then(response => response.text())
-            .then(message => {
-                alert(message);
-                if (message === 'Checkout successful') {
-                    window.location.href = '/orders'; // 주문 확인 페이지로 리디렉션
-                }
-            })
-            .catch(error => console.error('Error:', error));
+        if (!hasItems) {
+            alert('장바구니가 비어있거나 수량이 유효하지 않습니다.');
+            return;
+        }
 
+        console.log("결제 진행:", productQuantities); // 디버깅 로그
+
+        try {
+            // 백엔드에 POST /api/cart/checkout 엔드포인트 필요
+            const response = await fetch('/api/cart/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(productQuantities) // 상품 ID와 수량 전송
+            });
+
+            const message = await response.text(); // 응답 메시지 받기
+
+            if (!response.ok) {
+                throw new Error(message || `결제 실패: ${response.statusText}`);
+            }
+
+            alert(message || '결제가 완료되었습니다!');
+            window.location.href = '/orders'; // 주문 내역 페이지 경로 수정
+
+        } catch (error) {
+            console.error('결제 오류:', error);
+            alert(`결제 오류: ${error.message}`);
+        }
     }
 
-    function updateItemTotal(itemId, pricePerUnit) {
-        const quantityInput = document.getElementById(`quantity-${itemId}`);
-        const quantity = parseInt(quantityInput.value, 10) || 0; // 수량이 숫자가 아니면 0으로 처리
+    // --- 아이템 합계 업데이트 함수 (수정됨) ---
+    function updateItemTotal(cartItemId, pricePerUnit) {
+        const quantityInput = document.getElementById(`quantity-${cartItemId}`);
+        const quantity = parseInt(quantityInput.value, 10);
 
-        // 해당 항목의 총 가격 업데이트
-        const totalPriceElement = document.getElementById(`total-price-${itemId}`);
-        totalPriceElement.textContent = `Total Price: $${(pricePerUnit * quantity).toFixed(2)}`;
+        if (isNaN(quantity) || quantity < 1) {
+            alert("수량은 1 이상이어야 합니다.");
+            quantityInput.value = 1; // 1로 재설정
+            // 전체 총액 즉시 업데이트
+            updateTotal();
+            return;
+        }
 
-        // 전체 총합 업데이트
+        const price = parseFloat(pricePerUnit) || 0;
+        const totalPriceElement = document.getElementById(`total-price-${cartItemId}`);
+        if (totalPriceElement) {
+            totalPriceElement.textContent = `합계: ₩${(price * quantity).toLocaleString()}`; // 통화 형식 변경
+        }
+
+        // 전체 총액 업데이트
         updateTotal();
     }
 
+    // --- 전체 총액 업데이트 함수 (수정됨) ---
     function updateTotal() {
         let total = 0;
         cartItems.forEach(item => {
             const quantityInput = document.getElementById(`quantity-${item.id}`);
-            const quantity = parseInt(quantityInput.value, 10) || 0; // 수량이 숫자가 아니면 0으로 처리
-            const price = parseFloat(item.price) || 0; // 가격이 숫자가 아니면 0으로 처리
-            total += price * quantity;
+            if (quantityInput) { // 요소 존재 확인
+                const quantity = parseInt(quantityInput.value, 10) || 0;
+                const price = parseFloat(item.price) || 0;
+                total += price * quantity;
+            }
         });
-        document.getElementById('total').innerHTML = `<h4>Total Price of Cart Items: $${total.toFixed(2)}</h4>`;
+        const totalContainer = document.getElementById('total');
+        if (totalContainer) { // 요소 존재 확인
+            totalContainer.innerHTML = `총 주문 금액: ₩${total.toLocaleString()}`; // 통화 형식 변경
+        }
     }
 
-
-
-    // 페이지 로드 시 장바구니 항목 불러오기
-    document.addEventListener('DOMContentLoaded', loadCartItems);
+    // --- 페이지 로드 시 초기화 ---
+    document.addEventListener('DOMContentLoaded', function() {
+        // main.js에서 헤더/인증 상태를 먼저 업데이트
+        if (typeof updateAuthState === 'function') {
+            updateAuthState();
+        } else {
+            console.warn('updateAuthState 함수를 찾을 수 없습니다.');
+        }
+        // 그 다음 장바구니 아이템 로드 (내부에서 다시 인증 확인)
+        loadCartItems();
+    });
 </script>
-<script src="/js/main.js"></script>
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

@@ -1,4 +1,3 @@
-# templates/spring-deployment.yaml 최종 수정본
 apiVersion: apps/v1
 kind: Deployment
 metadata:

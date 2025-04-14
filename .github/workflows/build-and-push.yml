@@ -1,5 +1,3 @@
-# build-and-push.yml 최종 수정본 (Job 레벨에서 uses 사용)
-
 name: Build and Push
 
 permissions:
@@ -33,7 +31,6 @@ jobs:
       apache_tag: ${{ steps.build_apache.outputs.apache_tag }}
       was_tag: ${{ steps.build_was.outputs.was_tag }}
     steps:
-      # ... (Checkout, Setup JDK, Configure AWS, Login ECR, Build Apache, Build Gradle, Build WAS steps - 이전과 동일) ...
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -86,11 +83,10 @@ jobs:
           docker push $ECR_REGISTRY/$WAS_ECR:$IMAGE_TAG
           echo "was_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
 
-
   # Deploy 워크플로우를 호출하는 Job - 수정된 구조!
   call-deploy:
     needs: build-and-push      # 이전 Job 의존성
-    uses: ./.github/workflows/deploy.yml # <-- !!! Job 레벨에서 직접 호출 !!!
+    uses: ./.github/workflows/deploy.yml
     with:                      # <-- 입력 전달 (uses와 같은 레벨)
       apache_image_tag: ${{ needs.build-and-push.outputs.apache_tag }}
       was_image_tag: ${{ needs.build-and-push.outputs.was_tag }}
@@ -98,6 +94,4 @@ jobs:
     permissions:               # <-- 필요한 권한 정의 (uses와 같은 레벨)
       id-token: write
       deployments: write
-      contents: read # deploy.yml 내 checkout 위해 필요
-    # runs-on은 호출되는 워크플로우(deploy.yml)에 정의되어 있으므로 여기서 불필요
-    # steps: 블록은 완전히 제거됨
+      contents: read
