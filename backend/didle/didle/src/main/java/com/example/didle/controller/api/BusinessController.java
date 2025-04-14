@@ -6,7 +6,10 @@ import com.example.didle.service.BusinessService;
 import com.example.didle.service.OrderService;
 import com.example.didle.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,23 +50,59 @@ public class BusinessController {
     @PostMapping("/login")
     public ResponseEntity<?> loginBusiness(@RequestBody Map<String, String> credentials, HttpSession session) {
         String username = credentials.get("username");
-        String password = credentials.get("passwordHash");
+        String password = credentials.get("passwordHash"); // 실제로는 해시 비교 필요
 
         Business authenticatedBusiness = businessService.authenticateBusiness(username, password);
 
         if (authenticatedBusiness != null) {
             session.setAttribute("businessId", authenticatedBusiness.getId());
-            session.setAttribute("businessName", authenticatedBusiness.getBusinessName());
+            session.setAttribute("businessName", authenticatedBusiness.getBusinessName()); // 세션에 businessName 저장
 
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("businessId", authenticatedBusiness.getId());
             responseBody.put("businessName", authenticatedBusiness.getBusinessName());
-
             return ResponseEntity.ok(responseBody);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Invalid username or password"));
         }
+    }
+
+    // --- !!! 현재 로그인된 비즈니스 정보 반환 엔드포인트 추가 !!! ---
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, String>> getCurrentBusiness(HttpSession session) {
+        Long businessId = (session != null) ? (Long) session.getAttribute("businessId") : null;
+        String businessName = (session != null) ? (String) session.getAttribute("businessName") : null;
+
+        if (businessId == null || businessName == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 비로그인 시 401
+        }
+
+        // JavaScript에서 필요한 정보만 반환 (예: businessName)
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("businessName", businessName);
+        // 필요하다면 다른 정보 (role 등) 추가 가능
+        // responseBody.put("role", "BUSINESS"); // 예시
+
+        return ResponseEntity.ok(responseBody);
+    }
+
+    // --- !!! 로그아웃 엔드포인트 (사용자 로그아웃과 동일하게 처리 가능) !!! ---
+    // 별도 엔드포인트 또는 공통 /api/logout 사용 가능. 여기서는 별도 생성 예시
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logoutBusiness(HttpServletRequest request, HttpServletResponse response, Authentication authentication, HttpSession session) {
+        if (session != null) {
+            session.invalidate(); // 세션 무효화
+        } else {
+            System.out.println("Business logout attempt with no active session.");
+        }
+
+        // Spring Security Logout Handler 사용 (선택 사항, 더 안전)
+        // if (authentication != null) {
+        //     new SecurityContextLogoutHandler().logout(request, response, authentication);
+        // }
+
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     @GetMapping("/profile")
