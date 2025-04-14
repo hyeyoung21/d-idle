@@ -43,7 +43,12 @@ dependencies {
 
     // S3 Starter 의존성 추가
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+    implementation 'software.amazon.awssdk:sts'
 
+    // --- AWS SDK v2 ---
+    // 기존 S3 의존성 (이미 있을 것임)
+    implementation platform('software.amazon.awssdk:bom:2.0.0') // AWS SDK BOM 버전 명시 권장
+    implementation 'software.amazon.awssdk:s3'
 }
 
 tasks.named('test') {
