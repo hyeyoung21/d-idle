@@ -50,10 +50,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Navigation Links 경로 확인 -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="index.html/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
-                    <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="cart">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="orders">Orders</a></li>
                 </ul>
 
                 <!-- Auth Section - JavaScript로 동적 제어 -->
@@ -62,15 +62,15 @@
                     <div id="logged-in-user" style="display: none;" class="align-items-center">
                         <span id="user-greeting" class="me-3"></span>
                         <div id="admin-link-container" style="display: none;">
-                            <a href="a_user.html" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
+                            <a href="a_user" class="btn btn-outline-danger btn-sm">관리자 페이지</a>
                         </div>
                         <button onclick="logout()" class="btn btn-outline-dark btn-sm">Logout</button>
                     </div>
 
                     <!-- 비로그인 상태 영역 (초기 표시) -->
                     <div id="guest-user" style="display: block;">
-                        <a href="login.html" class="btn btn-primary btn-sm">Login</a>
-                        <a href="signup.html" class="btn btn-success btn-sm">Sign Up</a>
+                        <a href="login" class="btn btn-primary btn-sm">Login</a>
+                        <a href="signup" class="btn btn-success btn-sm">Sign Up</a>
                     </div>
                 </div>
             </div> <!-- End of collapsible content -->
@@ -85,62 +85,94 @@
     </div>
 </div>
 
+<!-- 이 페이지의 주문 로드 로직 -->
 <script>
-    function loadOrders() {
-        const userId = /*[[${session.userId}]]*/ null;
+    // --- 주문 로드 함수 (수정됨) ---
+    async function loadOrders() { // async 키워드 추가
+        const orderList = document.getElementById('order-list');
+        orderList.innerHTML = '<p class="text-center text-muted mt-4">주문 내역을 불러오는 중...</p>'; // 로딩 표시
 
-        // 로그인 여부 확인
-        if (!userId) {
-            alert('Please login to view your orders');
-            window.location.href = '/login';
-            return; // 로그인되지 않은 경우 함수 종료
-        }
+        try {
+            // 1. 로그인 상태 확인 (API 호출)
+            const authResponse = await fetch('/api/users/me'); // 사용자 상태 확인
+            if (!authResponse.ok) {
+                // 로그인 안된 경우: 로그인 페이지로 이동
+                alert('주문 내역을 보려면 로그인해주세요.');
+                window.location.href = 'login.html'; // 로그인 페이지 경로 수정
+                return; // 함수 종료
+            }
 
-        // Fetch orders for the user
-        fetch(`/api/orders/user/${userId}`)
-            .then(response => response.json())
-            .then(orders => {
-                const orderList = document.getElementById('order-list');
-                orderList.innerHTML = ''; // Clear previous order list
+            // 2. 로그인된 경우: 주문 목록 가져오기 (수정된 엔드포인트 사용)
+            // 백엔드에 GET /api/orders/my 엔드포인트 필요!
+            const ordersResponse = await fetch('/api/orders/my'); // 현재 사용자 주문 API 호출
+            if (!ordersResponse.ok) {
+                throw new Error(`HTTP 오류! 상태: ${ordersResponse.status}`);
+            }
+            const orders = await ordersResponse.json();
 
-                if (orders.length === 0) {
-                    // 주문이 없을 경우 메시지 표시
-                    orderList.innerHTML = '<p class="text-center text-primary mt-4">No orders found!</p>';
-                    return;
+            orderList.innerHTML = ''; // 로딩 메시지 제거
+
+            if (!Array.isArray(orders) || orders.length === 0) {
+                orderList.innerHTML = '<p class="text-center text-primary mt-4">주문 내역이 없습니다!</p>';
+                return;
+            }
+
+            // 주문 목록 렌더링 (데이터 유효성 검사 및 포맷팅 추가)
+            orders.forEach(order => {
+                const orderElement = document.createElement('div');
+                orderElement.className = 'card mb-3 shadow-sm';
+                let orderItemsHtml = '';
+
+                if (Array.isArray(order.orderItems)) {
+                    order.orderItems.forEach(item => {
+                        const productName = item.productName || '상품명 없음';
+                        const price = parseFloat(item.price) || 0;
+                        const quantity = parseInt(item.quantity, 10) || 0;
+                        orderItemsHtml += `<li class="list-group-item">${productName} - 수량: ${quantity}, 가격: ₩${price.toLocaleString()}</li>`;
+                    });
                 }
 
-                // 주문 목록 렌더링
-                orders.forEach(order => {
-                    const orderElement = document.createElement('div');
-                    orderElement.className = 'card mb-3 shadow-sm'; // Bootstrap 카드 스타일 추가
-                    let orderItemsHtml = '';
-                    order.orderItems.forEach(item => {
-                        orderItemsHtml += `<li class="list-group-item">${item.productName} - Quantity: ${item.quantity}, Price: $${item.price}</li>`;
-                    });
+                const orderId = order.id || 'N/A';
+                const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleString('ko-KR') : '날짜 정보 없음'; // 한국식 날짜/시간
+                const status = order.status || '상태 정보 없음';
+                const totalPrice = parseFloat(order.totalPrice) || 0;
 
-                    orderElement.innerHTML = `
+                orderElement.innerHTML = `
                     <div class="card-header bg-primary text-white">
-                        Order #${order.id}
+                        주문 번호 #${orderId}
                     </div>
                     <div class="card-body">
-                        <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
-                        <p><strong>Status:</strong> ${order.status}</p>
-                        <p><strong>Total:</strong> $${order.totalPrice}</p>
-                        <h6>Items:</h6>
+                        <p><strong>주문 일시:</strong> ${orderDate}</p>
+                        <p><strong>주문 상태:</strong> ${status}</p>
+                        <p><strong>총 금액:</strong> ₩${totalPrice.toLocaleString()}</p>
+                        <h6>주문 상품:</h6>
                         <ul class="list-group list-group-flush">
-                            ${orderItemsHtml}
+                            ${orderItemsHtml || '<li class="list-group-item">주문 상품 정보 없음</li>'}
                         </ul>
                     </div>
                 `;
-                    orderList.appendChild(orderElement);
-                });
-            })
-            .catch(error => console.error('Error fetching orders:', error));
+                orderList.appendChild(orderElement);
+            });
+        } catch (error) {
+            console.error('주문 내역 로딩 오류:', error);
+            orderList.innerHTML = `<p class="text-center text-danger mt-4">주문 내역을 불러오는데 실패했습니다. ${error.message}</p>`; // 오류 메시지 표시
+        }
     }
 
 
-    // Load orders when the page loads
-    document.addEventListener('DOMContentLoaded', loadOrders);
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // main.js에서 헤더/인증 상태를 먼저 업데이트
+        if (typeof updateAuthState === 'function') {
+            updateAuthState();
+        } else {
+            console.warn('updateAuthState 함수를 찾을 수 없습니다.');
+            // 인증이 필수인 페이지이므로, 즉시 로그인 페이지로 보낼 수도 있음
+            // fetch('/api/users/me').then(res => !res.ok ? window.location.href = '/login' : null);
+        }
+        // 그 다음 주문 내역 로드 (내부에서 다시 인증 확인)
+        loadOrders();
+    });
 </script>
 <script src="static/js/main.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>

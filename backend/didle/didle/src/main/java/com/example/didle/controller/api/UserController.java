@@ -103,4 +103,31 @@ public class UserController {
 
         return ResponseEntity.ok(responseBody);
     }
+
+    @GetMapping("/current")
+    public ResponseEntity<Map<String, Object>> getCurrentUserForChatBot(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        String username = (String) session.getAttribute("username");
+        User.UserType userType = (User.UserType) session.getAttribute("userType");
+
+        if (userId == null || username == null || userType == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "User not logged in"));
+        }
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("id", userId);
+        responseBody.put("username", username);
+        responseBody.put("userType", userType);
+
+        // 사용자 추가 정보 가져오기
+        User user = userService.getUserById(userId);
+        if (user != null) {
+            responseBody.put("email", user.getEmail());
+            responseBody.put("fullName", user.getFullName());
+            responseBody.put("phone", user.getPhone());
+            responseBody.put("address", user.getAddress());
+        }
+
+        return ResponseEntity.ok(responseBody);
+    }
 }
