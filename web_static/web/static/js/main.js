@@ -1,6 +1,6 @@
 function switchToUserMode() {
     // 사용자 모드로 전환하는 기능 구현
-    window.location.href = '/'; // 사용자 모드로 전환하는 URL로 변경
+    window.location.href = 'index.html'; // 사용자 모드로 전환하는 URL로 변경
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -54,7 +54,7 @@ async function updateAuthState() {
 // logout 함수는 이전과 동일하게 사용 가능
 async function logout() {
     try {
-        const response = await fetch('/api/logout', { method: 'POST' });
+        const response = await fetch('/api/users/logout', { method: 'POST' });
 
         if (response.ok) { // 204 No Content도 response.ok 는 true
             updateAuthState(); // 상태 다시 확인하여 UI 업데이트

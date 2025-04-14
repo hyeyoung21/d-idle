@@ -7,7 +7,7 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="static/css/header.css">
     <link rel="icon" type="image/x-icon" href="static/img/favicon.ico">
 
     <!-- Custom Styles -->
@@ -216,7 +216,7 @@
             if (!authResponse.ok) {
                 // 로그인 안된 경우: 로그인 페이지로 이동
                 alert('Please login to view products');
-                window.location.href = '/login.html'; // 경로 확인
+                window.location.href = 'login.html'; // 경로 확인
                 return; // 함수 종료
             }
 
@@ -302,7 +302,7 @@
             const authResponse = await fetch('/api/users/me');
             if (!authResponse.ok) {
                 alert('Please login to add items to the cart.');
-                window.location.href = '/login.html'; // 경로 확인
+                window.location.href = 'login.html'; // 경로 확인
                 return; // 함수 종료
             }
 
@@ -328,7 +328,7 @@
             }
 
             alert(data || 'Products added to cart successfully!'); // 성공 메시지
-            window.location.href = '/cart.html'; // 장바구니 페이지 경로 확인
+            window.location.href = 'cart.html'; // 장바구니 페이지 경로 확인
 
         } catch (error) {
             console.error('Error adding products to cart:', error);

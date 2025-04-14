@@ -206,17 +206,17 @@
                 if (data.userType === 'ADMIN') {
                   showToast('Admin login successful!', 'success');
                   setTimeout(() => {
-                    window.location.href = '/admin';
+                    window.location.href = 'a_user.html';
                   }, 2000);
                 } else if (loginType === 'user') {
                   showToast('Login successful!', 'success');
                   setTimeout(() => {
-                    window.location.href = '/';
+                    window.location.href = 'index.html';
                   }, 2000);
                 } else {
                   showToast('Business login successful!', 'success');
                   setTimeout(() => {
-                    window.location.href = '/business';
+                    window.location.href = 'b_dashboard.html';
                   }, 2000);
                 }
               } else {
