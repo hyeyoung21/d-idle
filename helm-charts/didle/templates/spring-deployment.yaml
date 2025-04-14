@@ -1,3 +1,4 @@
+# templates/spring-deployment.yaml [7] 수정
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,15 +13,15 @@ spec:
       labels:
         app: {{ .Release.Name }}-spring
     spec:
+      serviceAccountName: {{ include "didle-app.serviceAccountName" . }} # <--- 이 줄 추가
       containers:
-      - name: spring
-        image: {{ .Values.spring.image.repository }}:{{ .Values.spring.image.tag }}
-        ports:
-        - containerPort: {{ .Values.spring.service.port }}
-        env:
-        - name: AWS_REGION
-          # 값이 없거나 nil이면 "us-east-2" 사용 (기본값 지정)
-          value: {{ default "us-east-2" .Values.aws.region | quote }}
-        - name: BUCKET_NAME
-          # 값이 없거나 nil이면 빈 문자열("") 사용
-          value: {{ default "didle-service-data" .Values.aws.bucketName | quote }}
+        - name: spring
+          image: {{ .Values.spring.image.repository }}:{{ .Values.spring.image.tag }}
+          ports:
+            - containerPort: {{ .Values.spring.service.port }}
+          env:
+            - name: AWS_REGION
+              value: {{ default "us-east-2" .Values.aws.region | quote }}
+            - name: BUCKET_NAME
+              value: {{ default "didle-service-data" .Values.aws.bucketName | quote }}
+          # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY는 여기서 제거 (IRSA 사용)

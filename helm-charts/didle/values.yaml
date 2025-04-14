@@ -1,29 +1,45 @@
 replicaCount: 2
 
+serviceAccount:
+  # true로 설정하면 Helm 차트가 Service Account를 생성합니다.
+  # false로 설정하면 기존 Service Account (아래 name으로 지정)를 사용합니다.
+  create: true
+  # 사용할 Service Account의 이름입니다.
+  # create: true 이고 name이 비어있으면 차트 이름 기반으로 자동 생성됩니다.
+  # create: false 이면 여기에 기존 Service Account 이름을 지정해야 합니다.
+  name: ""
+  # Service Account에 추가할 어노테이션입니다. IRSA 설정이 여기에 들어갑니다!
+  annotations: {}
+  # 예시: 실제 IAM 역할 ARN으로 교체해야 합니다.
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_S3_ACCESS_ROLE_NAME
+
 apache:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web # 실제 이름 확인!
-    tag: placeholder-tag # build-and-push.yml에서 이 값 업데이트 X
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-web
+    tag: placeholder-tag
   service:
     type: ClusterIP
     port: 80
 
 spring:
   image:
-    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was # 실제 이름 확인!
-    tag: placeholder-tag # build-and-push.yml에서 이 값 업데이트 X
+    repository: 116981805975.dkr.ecr.us-east-2.amazonaws.com/didle-was
+    tag: placeholder-tag
   service:
     type: ClusterIP
     port: 8080
 
 aws:
-  accessKey: "" # 기본값 (CI/CD에서 덮어씀)
-  secretKey: "" # 기본값 (CI/CD에서 덮어씀)
-  region: "us-east-2" # 기본값
-  bucketName: "" # 기본값 (CI/CD에서 덮어씀)
+  # accessKey, secretKey는 IRSA 사용 시 빈 값으로 두거나 제거합니다.
+  accessKey: ""
+  secretKey: ""
+  region: "us-east-2"
+  # bucketName은 애플리케이션에서 필요하므로 유지하거나 환경 변수로 전달합니다.
+  bucketName: "didle-service-data" # 기본값을 여기서 설정하는 것이 좋습니다.
 
-deployment:
-  enabled: true # 실제로 사용하지 않으면 제거 고려
+# deployment: # 이 섹션은 현재 사용되지 않는 것 같으므로 제거해도 무방합니다.
+#  enabled: true
 
 ingress:
   enabled: true

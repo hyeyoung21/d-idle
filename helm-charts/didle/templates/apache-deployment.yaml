@@ -1,3 +1,4 @@
+# templates/apache-deployment.yaml [3] 수정
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,17 +13,20 @@ spec:
       labels:
         app: {{ .Release.Name }}-apache
     spec:
+      serviceAccountName: {{ include "didle-app.serviceAccountName" . }} # <--- 이 줄 추가 (Apache도 AWS 접근 필요시)
       containers:
-      - name: apache
-        image: {{ .Values.apache.image.repository }}:{{ .Values.apache.image.tag }}
-        ports:
-        - containerPort: {{ .Values.apache.service.port }}
-        env:
-        - name: AWS_ACCESS_KEY_ID
-          value: {{ default "" .Values.aws.accessKey | quote }}
-        - name: AWS_SECRET_ACCESS_KEY
-          value: {{ default "" .Values.aws.secretKey | quote }}
-        - name: AWS_REGION
-          value: {{ default "us-east-2" .Values.aws.region | quote }}
-        - name: BUCKET_NAME
-          value: {{ default "" .Values.aws.bucketName | quote }}
+        - name: apache
+          image: {{ .Values.apache.image.repository }}:{{ .Values.apache.image.tag }}
+          ports:
+            - containerPort: {{ .Values.apache.service.port }}
+          env:
+            # --- AWS Key 환경 변수 제거 ---
+            # - name: AWS_ACCESS_KEY_ID
+            #   value: {{ default "" .Values.aws.accessKey | quote }}
+            # - name: AWS_SECRET_ACCESS_KEY
+            #   value: {{ default "" .Values.aws.secretKey | quote }}
+            # --- 필요한 다른 환경 변수는 유지 ---
+            - name: AWS_REGION
+              value: {{ default "us-east-2" .Values.aws.region | quote }}
+            - name: BUCKET_NAME
+              value: {{ default "didle-service-data" .Values.aws.bucketName | quote }}
