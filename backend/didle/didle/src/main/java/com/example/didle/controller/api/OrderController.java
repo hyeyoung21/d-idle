@@ -19,6 +19,21 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    // --- !!! 현재 로그인된 사용자의 주문 목록 반환 엔드포인트 추가 !!! ---
+    @GetMapping("/my")
+    public ResponseEntity<List<OrderDTO>> getMyOrders(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 비로그인 시 401
+        }
+        try {
+            List<OrderDTO> orderDTOs = orderService.getOrdersByUserId(userId);
+            return ResponseEntity.ok(orderDTOs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long id) {
         try {
